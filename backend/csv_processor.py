@@ -185,18 +185,16 @@ class CSVProcessor:
                                 author_data['affiliation'] = university
                                 author_data['paper_ids'].add(paper_id)
         
-        # Build final structure with counts
+        # Build final structure with UNIQUE counts
         result = []
         for country_id, country_data in countries_data.items():
             universities = []
-            total_country_papers = 0
             
             for uni_id, uni_data in country_data['universities'].items():
                 authors = []
-                total_uni_papers = 0
                 
                 for author_id, author_data in uni_data['authors'].items():
-                    paper_ids = list(set(author_data['papers']))  # Remove duplicates
+                    paper_ids = list(author_data['paper_ids'])  # Already a set, so unique
                     authors.append({
                         'id': author_id,
                         'name': author_data['name'],
@@ -204,16 +202,14 @@ class CSVProcessor:
                         'paperCount': len(paper_ids),
                         'papers': [all_papers[pid] for pid in paper_ids if pid in all_papers]
                     })
-                    total_uni_papers += len(paper_ids)
                 
                 if authors:  # Only include universities with authors
                     universities.append({
                         'id': uni_id,
                         'name': uni_data['name'],
-                        'paperCount': total_uni_papers,
+                        'paperCount': len(uni_data['paper_ids']),  # Unique papers for this university
                         'authors': sorted(authors, key=lambda x: x['paperCount'], reverse=True)
                     })
-                    total_country_papers += total_uni_papers
             
             if universities:  # Only include countries with universities
                 coords = get_country_coordinates(country_data['name'])
@@ -222,7 +218,7 @@ class CSVProcessor:
                     'name': country_data['name'],
                     'lat': coords['lat'],
                     'lng': coords['lng'],
-                    'paperCount': total_country_papers,
+                    'paperCount': len(country_data['paper_ids']),  # Unique papers for this country
                     'universities': sorted(universities, key=lambda x: x['paperCount'], reverse=True)
                 })
         
