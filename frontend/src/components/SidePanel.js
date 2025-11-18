@@ -27,7 +27,7 @@ const SidePanel = ({
           variant="ghost" 
           size="sm" 
           onClick={() => onBack('country')}
-          className="text-cyan-600 hover:text-cyan-700"
+          className="text-white hover:text-white hover:bg-white/20 font-semibold"
         >
           <Globe className="w-4 h-4 mr-1" />
           {selectedCountry.name}
@@ -37,13 +37,13 @@ const SidePanel = ({
     
     if (selectedUniversity) {
       items.push(
-        <ChevronRight key="arrow1" className="w-4 h-4 text-gray-400" />,
+        <ChevronRight key="arrow1" className="w-4 h-4 text-white" />,
         <Button 
           key="university" 
           variant="ghost" 
           size="sm" 
           onClick={() => onBack('university')}
-          className="text-cyan-600 hover:text-cyan-700"
+          className="text-white hover:text-white hover:bg-white/20 font-semibold"
         >
           <Building2 className="w-4 h-4 mr-1" />
           {selectedUniversity.name.length > 30 ? selectedUniversity.name.substring(0, 30) + '...' : selectedUniversity.name}
@@ -53,8 +53,8 @@ const SidePanel = ({
     
     if (selectedAuthor) {
       items.push(
-        <ChevronRight key="arrow2" className="w-4 h-4 text-gray-400" />,
-        <span key="author" className="text-sm font-medium text-gray-700 flex items-center">
+        <ChevronRight key="arrow2" className="w-4 h-4 text-white" />,
+        <span key="author" className="text-sm font-semibold text-white flex items-center px-3">
           <User className="w-4 h-4 mr-1" />
           {selectedAuthor.name}
         </span>

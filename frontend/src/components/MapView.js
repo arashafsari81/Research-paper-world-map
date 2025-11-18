@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Search, Filter } from 'lucide-react';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select';
 import { mockCountries, mockYears } from '../data/mock';
 
 // Component to handle map zoom and pan
@@ -26,9 +17,66 @@ function MapController({ center, zoom }) {
   return null;
 }
 
-const MapView = ({ onCountryClick, selectedCountry }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [yearFilter, setYearFilter] = useState('all');
+// Custom marker with text label
+function CountryMarker({ country, onClick, isSelected }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    const size = getMarkerSize(country.paperCount);
+    const divIcon = L.divIcon({
+      html: `
+        <div style="
+          width: ${size * 2}px;
+          height: ${size * 2}px;
+          border-radius: 50%;
+          background-color: #0891b2;
+          border: 2px solid white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+          cursor: pointer;
+          transition: all 0.2s ease;
+        ">
+          <span style="
+            color: white;
+            font-weight: bold;
+            font-size: ${size > 12 ? '12px' : '10px'};
+          ">${country.paperCount}</span>
+        </div>
+      `,
+      className: 'custom-marker',
+      iconSize: [size * 2, size * 2],
+      iconAnchor: [size, size]
+    });
+
+    const marker = L.marker([country.lat, country.lng], { icon: divIcon })
+      .addTo(map)
+      .on('click', () => onClick(country));
+
+    // Add hover tooltip
+    marker.bindTooltip(country.name, {
+      permanent: false,
+      direction: 'top',
+      className: 'custom-tooltip'
+    });
+
+    return () => {
+      map.removeLayer(marker);
+    };
+  }, [country, map, onClick, isSelected]);
+
+  return null;
+}
+
+const getMarkerSize = (paperCount) => {
+  if (paperCount > 200) return 20;
+  if (paperCount > 100) return 16;
+  if (paperCount > 50) return 12;
+  return 8;
+};
+
+const MapView = ({ onCountryClick, selectedCountry, searchTerm, yearFilter, onSearchChange, onYearChange, stats }) => {
   const [filteredCountries, setFilteredCountries] = useState(mockCountries);
   const [mapCenter, setMapCenter] = useState([20, 0]);
   const [mapZoom, setMapZoom] = useState(2);
@@ -84,89 +132,8 @@ const MapView = ({ onCountryClick, selectedCountry }) => {
     }
   }, [selectedCountry]);
 
-  const getMarkerSize = (paperCount) => {
-    if (paperCount > 200) return 20;
-    if (paperCount > 100) return 16;
-    if (paperCount > 50) return 12;
-    return 8;
-  };
-
-  const getMarkerColor = (paperCount) => {
-    if (paperCount > 200) return '#0891b2';
-    if (paperCount > 100) return '#14b8a6';
-    if (paperCount > 50) return '#2dd4bf';
-    return '#5eead4';
-  };
-
   return (
     <div className="relative w-full h-screen">
-      {/* Search and Filter Bar */}
-      <div className="absolute top-6 left-6 z-[1000] bg-white rounded-lg shadow-xl p-4 w-96 space-y-3">
-        <div className="flex items-center gap-2">
-          <Search className="w-5 h-5 text-cyan-600" />
-          <h3 className="font-semibold text-gray-800">Search & Filter</h3>
-        </div>
-        
-        <div className="relative">
-          <Input
-            type="text"
-            placeholder="Search country, university, author, or paper..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-cyan-600" />
-          <Select value={yearFilter} onValueChange={setYearFilter}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Filter by year" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Years</SelectItem>
-              {mockYears.map(year => (
-                <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {searchTerm && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setSearchTerm('')}
-            className="w-full"
-          >
-            Clear Search
-          </Button>
-        )}
-      </div>
-
-      {/* Legend */}
-      <div className="absolute bottom-6 left-6 z-[1000] bg-white rounded-lg shadow-xl p-4 w-64">
-        <h4 className="font-semibold text-gray-800 mb-3">Paper Count Legend</h4>
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div className="w-5 h-5 rounded-full" style={{ backgroundColor: '#5eead4' }}></div>
-            <span className="text-sm text-gray-600">1-50 papers</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-5 h-5 rounded-full" style={{ backgroundColor: '#2dd4bf' }}></div>
-            <span className="text-sm text-gray-600">51-100 papers</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-5 h-5 rounded-full" style={{ backgroundColor: '#14b8a6' }}></div>
-            <span className="text-sm text-gray-600">101-200 papers</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-5 h-5 rounded-full" style={{ backgroundColor: '#0891b2' }}></div>
-            <span className="text-sm text-gray-600">200+ papers</span>
-          </div>
-        </div>
-      </div>
-
       {/* Map */}
       <MapContainer 
         center={mapCenter} 
@@ -181,29 +148,34 @@ const MapView = ({ onCountryClick, selectedCountry }) => {
         <MapController center={mapCenter} zoom={mapZoom} />
         
         {filteredCountries.map(country => (
-          <CircleMarker
+          <CountryMarker
             key={country.id}
-            center={[country.lat, country.lng]}
-            radius={getMarkerSize(country.paperCount)}
-            fillColor={getMarkerColor(country.paperCount)}
-            color="#fff"
-            weight={2}
-            opacity={1}
-            fillOpacity={0.8}
-            eventHandlers={{
-              click: () => onCountryClick(country)
-            }}
-          >
-            <Popup>
-              <div className="text-center">
-                <h3 className="font-semibold text-gray-800">{country.name}</h3>
-                <p className="text-sm text-gray-600">{country.paperCount} papers</p>
-                <p className="text-xs text-gray-500 mt-1">Click marker to view details</p>
-              </div>
-            </Popup>
-          </CircleMarker>
+            country={country}
+            onClick={onCountryClick}
+            isSelected={selectedCountry === country.id}
+          />
         ))}
       </MapContainer>
+
+      {/* Custom tooltip styles */}
+      <style>{`
+        .custom-tooltip {
+          background-color: rgba(8, 145, 178, 0.95);
+          border: none;
+          border-radius: 6px;
+          color: white;
+          font-weight: 600;
+          padding: 6px 12px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .custom-tooltip::before {
+          border-top-color: rgba(8, 145, 178, 0.95) !important;
+        }
+        .custom-marker:hover > div {
+          transform: scale(1.1);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+        }
+      `}</style>
     </div>
   );
 };
