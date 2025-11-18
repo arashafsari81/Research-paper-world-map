@@ -9,7 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
-import { mockYears } from '../data/mock';
+
+const YEARS = [2021, 2022, 2023, 2024, 2025];
 
 const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, stats }) => {
   return (
@@ -79,7 +80,7 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, stats })
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Years</SelectItem>
-                {mockYears.map(year => (
+                {YEARS.map(year => (
                   <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
                 ))}
               </SelectContent>

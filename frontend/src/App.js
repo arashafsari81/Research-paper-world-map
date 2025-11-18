@@ -12,79 +12,63 @@ function App() {
   const [selectedAuthor, setSelectedAuthor] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [yearFilter, setYearFilter] = useState('all');
-  const [stats, setStats] = useState(null);
-  const [countries, setCountries] = useState([]);
+  const [stats, setStats] = useState({
+    totalPapers: 0,
+    totalCountries: 0,
+    totalUniversities: 0,
+    totalAuthors: 0
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load initial data
+  // Load stats on mount
   useEffect(() => {
-    const loadData = async () => {
+    const loadStats = async () => {
       try {
         setLoading(true);
-        const [statsData, countriesData] = await Promise.all([
-          ApiService.fetchStats(),
-          ApiService.fetchCountries()
-        ]);
-        setStats(statsData);
-        setCountries(countriesData);
+        const data = await ApiService.getStats();
+        setStats(data);
         setError(null);
       } catch (err) {
-        console.error('Failed to load data:', err);
+        console.error('Error loading stats:', err);
         setError('Failed to load data. Please try again.');
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
+    loadStats();
   }, []);
 
-  const handleCountryClick = async (countryData) => {
-    try {
-      // If we only have basic country data, fetch full details
-      let fullCountryData = countryData;
-      if (!countryData.universities) {
-        fullCountryData = await ApiService.fetchCountry(countryData.id);
-      }
-      
-      setSelectedCountry(fullCountryData);
-      setSelectedUniversity(null);
-      setSelectedAuthor(null);
-      setIsPanelOpen(true);
-    } catch (err) {
-      console.error('Failed to load country details:', err);
-      setError('Failed to load country details.');
-    }
+  const handleCountryClick = (country) => {
+    setSelectedCountry(country);
+    setSelectedUniversity(null);
+    setSelectedAuthor(null);
+    setIsPanelOpen(true);
   };
 
   const handleUniversityClick = async (university) => {
     try {
-      // Fetch full university details with authors
-      const fullUniversityData = await ApiService.fetchUniversity(
-        selectedCountry.id, 
-        university.id
-      );
-      setSelectedUniversity(fullUniversityData);
+      // Fetch full university data with authors
+      const fullUniversity = await ApiService.getUniversity(selectedCountry.id, university.id);
+      setSelectedUniversity({...university, ...fullUniversity});
       setSelectedAuthor(null);
     } catch (err) {
-      console.error('Failed to load university details:', err);
-      setError('Failed to load university details.');
+      console.error('Error loading university:', err);
     }
   };
 
   const handleAuthorClick = async (author) => {
     try {
-      // Fetch full author details with papers
-      const fullAuthorData = await ApiService.fetchAuthor(
-        selectedCountry.id,
-        selectedUniversity.id,
+      // Fetch full author data with papers
+      const fullAuthor = await ApiService.getAuthor(
+        selectedCountry.id, 
+        selectedUniversity.id, 
         author.id
       );
-      setSelectedAuthor(fullAuthorData);
+      setSelectedAuthor(fullAuthor);
     } catch (err) {
-      console.error('Failed to load author details:', err);
-      setError('Failed to load author details.');
+      console.error('Error loading author:', err);
     }
   };
 
@@ -108,10 +92,10 @@ function App() {
 
   if (loading) {
     return (
-      <div className="App flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-cyan-50 to-teal-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-lg text-gray-600">Loading research data...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-cyan-600 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-700">Loading Research Data...</p>
         </div>
       </div>
     );
@@ -119,14 +103,13 @@ function App() {
 
   if (error) {
     return (
-      <div className="App flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Error Loading Data</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-red-50 to-orange-50">
+        <div className="text-center p-8 bg-white rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Data</h2>
+          <p className="text-gray-700 mb-4">{error}</p>
           <button 
             onClick={() => window.location.reload()} 
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
           >
             Retry
           </button>
@@ -146,14 +129,10 @@ function App() {
       />
       <div className="pt-32">
         <MapView 
-          countries={countries}
           onCountryClick={handleCountryClick}
           selectedCountry={selectedCountry?.id}
           searchTerm={searchTerm}
           yearFilter={yearFilter}
-          onSearchChange={setSearchTerm}
-          onYearChange={setYearFilter}
-          stats={stats}
         />
       </div>
       <SidePanel

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, CircleMarker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import ApiService from '../services/api';
 
 // Component to handle map zoom and pan
 function MapController({ center, zoom }) {
@@ -69,17 +70,38 @@ function CountryMarker({ country, onClick, isSelected }) {
 }
 
 const getMarkerSize = (paperCount) => {
-  if (paperCount > 200) return 20;
-  if (paperCount > 100) return 16;
-  if (paperCount > 50) return 12;
+  if (paperCount > 2000) return 20;
+  if (paperCount > 500) return 16;
+  if (paperCount > 100) return 12;
   return 8;
 };
 
-const MapView = ({ countries = [], onCountryClick, selectedCountry, searchTerm, yearFilter, onSearchChange, onYearChange, stats }) => {
+const MapView = ({ onCountryClick, selectedCountry, searchTerm, yearFilter }) => {
+  const [countries, setCountries] = useState([]);
   const [filteredCountries, setFilteredCountries] = useState([]);
   const [mapCenter, setMapCenter] = useState([20, 0]);
   const [mapZoom, setMapZoom] = useState(2);
+  const [loading, setLoading] = useState(true);
 
+  // Load countries on mount
+  useEffect(() => {
+    const loadCountries = async () => {
+      try {
+        setLoading(true);
+        const data = await ApiService.getCountries();
+        setCountries(data);
+        setFilteredCountries(data);
+      } catch (err) {
+        console.error('Error loading countries:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCountries();
+  }, []);
+
+  // Apply search and year filters
   useEffect(() => {
     let filtered = countries;
 
@@ -91,12 +113,13 @@ const MapView = ({ countries = [], onCountryClick, selectedCountry, searchTerm, 
       );
     }
 
-    // Note: Year filtering will be handled by the backend API in the future
-    // For now, we'll just filter by country name
+    // Year filter would need to be applied on backend for accurate results
+    // For now, just pass through
 
     setFilteredCountries(filtered);
-  }, [countries, searchTerm, yearFilter]);
+  }, [searchTerm, yearFilter, countries]);
 
+  // Update map view when country is selected
   useEffect(() => {
     if (selectedCountry) {
       const country = countries.find(c => c.id === selectedCountry);
@@ -110,9 +133,29 @@ const MapView = ({ countries = [], onCountryClick, selectedCountry, searchTerm, 
     }
   }, [selectedCountry, countries]);
 
+  const handleCountryClick = async (country) => {
+    try {
+      // Fetch full country data with universities
+      const fullCountry = await ApiService.getCountry(country.id);
+      onCountryClick({...country, ...fullCountry});
+    } catch (err) {
+      console.error('Error loading country details:', err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600 mx-auto mb-4"></div>
+          <p className="text-gray-700">Loading map data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full h-screen">
-      {/* Map */}
       <MapContainer 
         center={mapCenter} 
         zoom={mapZoom} 
@@ -129,7 +172,7 @@ const MapView = ({ countries = [], onCountryClick, selectedCountry, searchTerm, 
           <CountryMarker
             key={country.id}
             country={country}
-            onClick={onCountryClick}
+            onClick={handleCountryClick}
             isSelected={selectedCountry === country.id}
           />
         ))}

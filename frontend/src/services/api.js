@@ -1,61 +1,71 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3000';
+const API_BASE = `${BACKEND_URL}/api`;
 
 class ApiService {
-  async fetchStats() {
-    const response = await fetch(`${API_BASE_URL}/stats`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch stats');
+  async getStats() {
+    try {
+      const response = await axios.get(`${API_BASE}/stats`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      throw error;
     }
-    return response.json();
   }
 
-  async fetchCountries() {
-    const response = await fetch(`${API_BASE_URL}/data/countries`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch countries');
+  async getCountries() {
+    try {
+      const response = await axios.get(`${API_BASE}/data/countries`);
+      return response.data.countries;
+    } catch (error) {
+      console.error('Error fetching countries:', error);
+      throw error;
     }
-    const data = await response.json();
-    return data.countries;
   }
 
-  async fetchCountry(countryId) {
-    const response = await fetch(`${API_BASE_URL}/data/country/${countryId}`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch country');
+  async getCountry(countryId) {
+    try {
+      const response = await axios.get(`${API_BASE}/data/country/${countryId}`);
+      return response.data.country;
+    } catch (error) {
+      console.error('Error fetching country:', error);
+      throw error;
     }
-    const data = await response.json();
-    return data.country;
   }
 
-  async fetchUniversity(countryId, universityId) {
-    const response = await fetch(`${API_BASE_URL}/data/university/${countryId}/${universityId}`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch university');
+  async getUniversity(countryId, universityId) {
+    try {
+      const response = await axios.get(`${API_BASE}/data/university/${countryId}/${universityId}`);
+      return response.data.university;
+    } catch (error) {
+      console.error('Error fetching university:', error);
+      throw error;
     }
-    const data = await response.json();
-    return data.university;
   }
 
-  async fetchAuthor(countryId, universityId, authorId) {
-    const response = await fetch(`${API_BASE_URL}/data/author/${countryId}/${universityId}/${authorId}`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch author');
+  async getAuthor(countryId, universityId, authorId) {
+    try {
+      const response = await axios.get(`${API_BASE}/data/author/${countryId}/${universityId}/${authorId}`);
+      return response.data.author;
+    } catch (error) {
+      console.error('Error fetching author:', error);
+      throw error;
     }
-    const data = await response.json();
-    return data.author;
   }
 
   async search(query, year) {
-    const params = new URLSearchParams();
-    if (query) params.append('q', query);
-    if (year && year !== 'all') params.append('year', year);
-    
-    const response = await fetch(`${API_BASE_URL}/search?${params}`);
-    if (!response.ok) {
-      throw new Error('Failed to search');
+    try {
+      const params = {};
+      if (query) params.q = query;
+      if (year) params.year = year;
+      
+      const response = await axios.get(`${API_BASE}/search`, { params });
+      return response.data.countries;
+    } catch (error) {
+      console.error('Error searching:', error);
+      throw error;
     }
-    const data = await response.json();
-    return data.countries;
   }
 }
 
