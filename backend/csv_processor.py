@@ -50,6 +50,19 @@ class CSVProcessor:
         name = re.sub(r'\s*\(\d+\)\s*$', '', author_text)
         return name.strip()
     
+    def normalize_author_name(self, name: str) -> str:
+        """Normalize author name for matching (convert 'Last, First' to 'First Last')."""
+        if not name:
+            return name
+        # If name contains comma, assume it's "Last, First" format
+        if ',' in name:
+            parts = name.split(',', 1)
+            if len(parts) == 2:
+                last = parts[0].strip()
+                first = parts[1].strip()
+                return f"{first} {last}"
+        return name
+    
     def parse_affiliation(self, affiliation_text: str) -> tuple:
         """Parse 'Author Name - University' format."""
         if not affiliation_text or pd.isna(affiliation_text):
