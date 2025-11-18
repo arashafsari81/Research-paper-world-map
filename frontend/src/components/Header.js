@@ -78,7 +78,7 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, stats })
               <SelectTrigger className="w-32 border-0 focus:ring-0">
                 <SelectValue placeholder="All Years" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[2000]">
                 <SelectItem value="all">All Years</SelectItem>
                 {YEARS.map(year => (
                   <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
