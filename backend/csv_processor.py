@@ -210,13 +210,13 @@ class CSVProcessor:
                         'papers': [all_papers[pid] for pid in paper_ids if pid in all_papers]
                     })
                 
-                if authors:  # Only include universities with authors
-                    universities.append({
-                        'id': uni_id,
-                        'name': uni_data['name'],
-                        'paperCount': len(uni_data['paper_ids']),  # Unique papers for this university
-                        'authors': sorted(authors, key=lambda x: x['paperCount'], reverse=True)
-                    })
+                # Include universities even without author details (papers are tracked)
+                universities.append({
+                    'id': uni_id,
+                    'name': uni_data['name'],
+                    'paperCount': len(uni_data['paper_ids']),  # Unique papers for this university
+                    'authors': sorted(authors, key=lambda x: x['paperCount'], reverse=True) if authors else []
+                })
             
             if universities:  # Only include countries with universities
                 coords = get_country_coordinates(country_data['name'])
