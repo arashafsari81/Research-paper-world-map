@@ -174,8 +174,15 @@ const SidePanel = ({
       );
     }
 
-    // Country Universities View
+    // Country Universities View  
     if (selectedCountry) {
+      // Filter universities based on search
+      const filteredUniversities = searchFilter 
+        ? selectedCountry.universities.filter(uni =>
+            uni.name.toLowerCase().includes(searchFilter.toLowerCase())
+          )
+        : selectedCountry.universities;
+      
       return (
         <div className="space-y-6">
           <div className="bg-gradient-to-br from-cyan-50 to-teal-50 rounded-lg p-6">
@@ -184,14 +191,25 @@ const SidePanel = ({
               {selectedCountry.paperCount} Total Papers
             </Badge>
           </div>
+          
+          {/* Search within country */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search universities..."
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            />
+          </div>
 
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
               <Building2 className="w-5 h-5 mr-2 text-cyan-600" />
-              Universities ({selectedCountry.universities.length})
+              Universities ({filteredUniversities.length})
             </h3>
             <div className="grid gap-3">
-              {selectedCountry.universities.map(university => (
+              {filteredUniversities.map(university => (
                 <button
                   key={university.id}
                   onClick={() => onUniversityClick(university)}
@@ -207,7 +225,7 @@ const SidePanel = ({
                           {university.paperCount} Papers
                         </Badge>
                         <Badge variant="outline">
-                          {university.authors.length} {university.authors.length === 1 ? 'Author' : 'Authors'}
+                          {university.authors} {university.authors === 1 ? 'Author' : 'Authors'}
                         </Badge>
                       </div>
                     </div>
