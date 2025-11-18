@@ -164,8 +164,10 @@ class CSVProcessor:
                     
                     # Find authors from this university
                     for author_name in authors_in_paper:
-                        if author_name in author_affiliations:
-                            if author_affiliations[author_name] == university:
+                        # Normalize author name for matching
+                        normalized_name = self.normalize_author_name(author_name)
+                        if normalized_name in author_affiliations:
+                            if author_affiliations[normalized_name] == university:
                                 author_id = self.generate_id(author_name)
                                 author_data = countries_data[country_id]['universities'][uni_id]['authors'][author_id]
                                 author_data['name'] = author_name
