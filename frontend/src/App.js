@@ -1,52 +1,64 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import React, { useState } from 'react';
+import './App.css';
+import MapView from './components/MapView';
+import SidePanel from './components/SidePanel';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+function App() {
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  const [selectedUniversity, setSelectedUniversity] = useState(null);
+  const [selectedAuthor, setSelectedAuthor] = useState(null);
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
+  const handleCountryClick = (country) => {
+    setSelectedCountry(country);
+    setSelectedUniversity(null);
+    setSelectedAuthor(null);
+    setIsPanelOpen(true);
+  };
+
+  const handleUniversityClick = (university) => {
+    setSelectedUniversity(university);
+    setSelectedAuthor(null);
+  };
+
+  const handleAuthorClick = (author) => {
+    setSelectedAuthor(author);
+  };
+
+  const handleBack = (level) => {
+    if (level === 'country') {
+      setSelectedUniversity(null);
+      setSelectedAuthor(null);
+    } else if (level === 'university') {
+      setSelectedAuthor(null);
     }
   };
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
+  const handleClosePanel = () => {
+    setIsPanelOpen(false);
+    setTimeout(() => {
+      setSelectedCountry(null);
+      setSelectedUniversity(null);
+      setSelectedAuthor(null);
+    }, 300);
+  };
 
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
-
-function App() {
   return (
     <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <MapView 
+        onCountryClick={handleCountryClick}
+        selectedCountry={selectedCountry?.id}
+      />
+      <SidePanel
+        isOpen={isPanelOpen}
+        onClose={handleClosePanel}
+        selectedCountry={selectedCountry}
+        selectedUniversity={selectedUniversity}
+        selectedAuthor={selectedAuthor}
+        onUniversityClick={handleUniversityClick}
+        onAuthorClick={handleAuthorClick}
+        onBack={handleBack}
+      />
     </div>
   );
 }
