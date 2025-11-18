@@ -148,7 +148,7 @@ class CSVProcessor:
                         paper_universities[i] = uni
             
             # Extract author-affiliation mapping
-            author_affiliations = {}  # author_name -> (university, index)
+            author_affiliations = {}  # normalized_author_name -> (original_name, university, index)
             for i in range(1, 11):
                 affil_col = f'Author with Affliliation {i}'
                 if affil_col in row and pd.notna(row[affil_col]):
@@ -163,7 +163,9 @@ class CSVProcessor:
                                     uni_idx = idx
                                     break
                             if uni_idx is not None:
-                                author_affiliations[author_name] = (university, uni_idx)
+                                # Store with normalized name as key
+                                normalized = self.normalize_author_name(author_name)
+                                author_affiliations[normalized] = (author_name, university, uni_idx)
             
             # Build hierarchical structure with correct country-university association
             for uni_idx, university in paper_universities.items():
