@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import MapView from './components/MapView';
 import SidePanel from './components/SidePanel';
 import Header from './components/Header';
-import { mockCountries } from './data/mock';
+import ApiService from './services/api';
 
 function App() {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
