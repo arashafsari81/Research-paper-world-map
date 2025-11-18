@@ -12,30 +12,32 @@ function App() {
   const [selectedAuthor, setSelectedAuthor] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [yearFilter, setYearFilter] = useState('all');
+  const [stats, setStats] = useState(null);
+  const [countries, setCountries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Calculate statistics
-  const stats = useMemo(() => {
-    let totalPapers = 0;
-    let totalUniversities = 0;
-    let totalAuthors = 0;
-    const uniqueAuthors = new Set();
-
-    mockCountries.forEach(country => {
-      totalUniversities += country.universities.length;
-      country.universities.forEach(uni => {
-        uni.authors.forEach(author => {
-          uniqueAuthors.add(author.id);
-          totalPapers += author.papers.length;
-        });
-      });
-    });
-
-    return {
-      totalPapers,
-      totalCountries: mockCountries.length,
-      totalUniversities,
-      totalAuthors: uniqueAuthors.size
+  // Load initial data
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [statsData, countriesData] = await Promise.all([
+          ApiService.fetchStats(),
+          ApiService.fetchCountries()
+        ]);
+        setStats(statsData);
+        setCountries(countriesData);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to load data:', err);
+        setError('Failed to load data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
     };
+
+    loadData();
   }, []);
 
   const handleCountryClick = (country) => {
