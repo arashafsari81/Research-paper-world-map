@@ -15,6 +15,8 @@ const SidePanel = ({
   onAuthorClick,
   onBack
 }) => {
+  const [searchFilter, setSearchFilter] = React.useState('');
+  
   if (!isOpen) return null;
 
   const renderBreadcrumb = () => {
