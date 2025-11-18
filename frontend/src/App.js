@@ -40,20 +40,52 @@ function App() {
     loadData();
   }, []);
 
-  const handleCountryClick = (country) => {
-    setSelectedCountry(country);
-    setSelectedUniversity(null);
-    setSelectedAuthor(null);
-    setIsPanelOpen(true);
+  const handleCountryClick = async (countryData) => {
+    try {
+      // If we only have basic country data, fetch full details
+      let fullCountryData = countryData;
+      if (!countryData.universities) {
+        fullCountryData = await ApiService.fetchCountry(countryData.id);
+      }
+      
+      setSelectedCountry(fullCountryData);
+      setSelectedUniversity(null);
+      setSelectedAuthor(null);
+      setIsPanelOpen(true);
+    } catch (err) {
+      console.error('Failed to load country details:', err);
+      setError('Failed to load country details.');
+    }
   };
 
-  const handleUniversityClick = (university) => {
-    setSelectedUniversity(university);
-    setSelectedAuthor(null);
+  const handleUniversityClick = async (university) => {
+    try {
+      // Fetch full university details with authors
+      const fullUniversityData = await ApiService.fetchUniversity(
+        selectedCountry.id, 
+        university.id
+      );
+      setSelectedUniversity(fullUniversityData);
+      setSelectedAuthor(null);
+    } catch (err) {
+      console.error('Failed to load university details:', err);
+      setError('Failed to load university details.');
+    }
   };
 
-  const handleAuthorClick = (author) => {
-    setSelectedAuthor(author);
+  const handleAuthorClick = async (author) => {
+    try {
+      // Fetch full author details with papers
+      const fullAuthorData = await ApiService.fetchAuthor(
+        selectedCountry.id,
+        selectedUniversity.id,
+        author.id
+      );
+      setSelectedAuthor(fullAuthorData);
+    } catch (err) {
+      console.error('Failed to load author details:', err);
+      setError('Failed to load author details.');
+    }
   };
 
   const handleBack = (level) => {
