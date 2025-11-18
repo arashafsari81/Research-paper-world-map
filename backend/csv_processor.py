@@ -51,6 +51,23 @@ class CSVProcessor:
         return name.strip()
     
     def normalize_author_name(self, name: str) -> str:
+        """Normalize author name for matching (handles 'Last, First' and 'First Last' formats)."""
+        if not name:
+            return ''
+        
+        # Convert to lowercase and remove extra spaces
+        name = ' '.join(name.lower().strip().split())
+        
+        # If name contains comma, it's in "Last, First" format - convert to "First Last"
+        if ',' in name:
+            parts = [p.strip() for p in name.split(',')]
+            if len(parts) == 2:
+                # "Last, First" -> "First Last"
+                name = f"{parts[1]} {parts[0]}"
+        
+        return name
+    
+    def normalize_author_name(self, name: str) -> str:
         """Normalize author name for matching (convert 'Last, First' to 'First Last')."""
         if not name:
             return name
