@@ -182,12 +182,14 @@ class CSVProcessor:
                     
                     # Find authors from this university
                     for author_name, author_id_num, author_idx in authors_in_paper:
-                        if author_name in author_affiliations:
-                            affil_uni, affil_uni_idx = author_affiliations[author_name]
+                        # Normalize author name for matching
+                        normalized_author = self.normalize_author_name(author_name)
+                        if normalized_author in author_affiliations:
+                            original_name, affil_uni, affil_uni_idx = author_affiliations[normalized_author]
                             if affil_uni == university:
                                 author_id = author_id_num if author_id_num else self.generate_id(author_name)
                                 author_data = countries_data[country_id]['universities'][uni_id]['authors'][author_id]
-                                author_data['name'] = author_name
+                                author_data['name'] = author_name  # Use name from Author column (with ID format)
                                 author_data['affiliation'] = university
                                 author_data['paper_ids'].add(paper_id)
         
