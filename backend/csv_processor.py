@@ -129,8 +129,8 @@ class CSVProcessor:
             paper_countries = {}  # index -> country
             for i in range(1, 19):
                 country_col = f'Country {i}'
-                if country_col in row and pd.notna(row[country_col]):
-                    country = self.clean_text(row[country_col])
+                if country_col in self.df.columns and pd.notna(row.get(country_col)):
+                    country = self.clean_text(row.get(country_col))
                     if country:
                         paper_countries[i] = country
             
@@ -138,8 +138,8 @@ class CSVProcessor:
             paper_universities = {}  # index -> university
             for i in range(1, 19):
                 uni_col = f'University {i}'
-                if uni_col in row and pd.notna(row[uni_col]):
-                    uni = self.clean_text(row[uni_col])
+                if uni_col in self.df.columns and pd.notna(row.get(uni_col)):
+                    uni = self.clean_text(row.get(uni_col))
                     if uni:
                         paper_universities[i] = uni
             
