@@ -1,14 +1,13 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
-from datetime import datetime, timezone
+from typing import Optional
+from datetime import datetime
+from csv_processor import CSVProcessor
 
 
 ROOT_DIR = Path(__file__).parent
@@ -25,46 +24,211 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# Global data cache
+cached_data = None
+cached_stats = None
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
+def load_data():
+    """Load and process CSV data."""
+    global cached_data, cached_stats
     
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    if cached_data is not None:
+        return
+    
+    csv_path = '/app/APU_publications_2021_2025_cleaned_Final.csv'
+    if not os.path.exists(csv_path):
+        logger.error(f"CSV file not found at {csv_path}")
+        return
+    
+    try:
+        processor = CSVProcessor(csv_path)
+        processor.load_csv().process_data()
+        cached_data = processor.get_processed_data()
+        cached_stats = processor.get_stats()
+        logger.info(f"Data loaded successfully: {cached_stats}")
+    except Exception as e:
+        logger.error(f"Error processing CSV: {e}")
+        import traceback
+        traceback.print_exc()
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
 
-# Add your routes to the router instead of directly to app
+# Routes
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Research Papers World Map API"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
+@api_router.get("/stats")
+async def get_stats():
+    """Get overall statistics."""
+    if cached_stats is None:
+        load_data()
     
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
+    if cached_stats is None:
+        raise HTTPException(status_code=500, detail="Data not loaded")
     
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+    return cached_stats
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
+@api_router.get("/data/countries")
+async def get_countries():
+    """Get all countries with paper counts and coordinates."""
+    if cached_data is None:
+        load_data()
     
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
+    if cached_data is None:
+        raise HTTPException(status_code=500, detail="Data not loaded")
     
-    return status_checks
+    # Return simplified country data for map
+    countries = []
+    for country in cached_data:
+        countries.append({
+            'id': country['id'],
+            'name': country['name'],
+            'lat': country['lat'],
+            'lng': country['lng'],
+            'paperCount': country['paperCount']
+        })
+    
+    return {'countries': countries}
+
+@api_router.get("/data/country/{country_id}")
+async def get_country(country_id: str):
+    """Get universities for a specific country."""
+    if cached_data is None:
+        load_data()
+    
+    if cached_data is None:
+        raise HTTPException(status_code=500, detail="Data not loaded")
+    
+    # Find country
+    country = None
+    for c in cached_data:
+        if c['id'] == country_id:
+            country = c
+            break
+    
+    if not country:
+        raise HTTPException(status_code=404, detail="Country not found")
+    
+    # Return country with simplified universities (without full author data)
+    universities = []
+    for uni in country['universities']:
+        universities.append({
+            'id': uni['id'],
+            'name': uni['name'],
+            'paperCount': uni['paperCount'],
+            'authors': len(uni['authors'])
+        })
+    
+    return {
+        'country': {
+            'id': country['id'],
+            'name': country['name'],
+            'paperCount': country['paperCount'],
+            'universities': universities
+        }
+    }
+
+@api_router.get("/data/university/{country_id}/{university_id}")
+async def get_university(country_id: str, university_id: str):
+    """Get authors for a specific university."""
+    if cached_data is None:
+        load_data()
+    
+    if cached_data is None:
+        raise HTTPException(status_code=500, detail="Data not loaded")
+    
+    # Find country and university
+    country = None
+    for c in cached_data:
+        if c['id'] == country_id:
+            country = c
+            break
+    
+    if not country:
+        raise HTTPException(status_code=404, detail="Country not found")
+    
+    university = None
+    for uni in country['universities']:
+        if uni['id'] == university_id:
+            university = uni
+            break
+    
+    if not university:
+        raise HTTPException(status_code=404, detail="University not found")
+    
+    # Return university with simplified authors (without papers)
+    authors = []
+    for author in university['authors']:
+        authors.append({
+            'id': author['id'],
+            'name': author['name'],
+            'affiliation': author['affiliation'],
+            'paperCount': author['paperCount']
+        })
+    
+    return {
+        'university': {
+            'id': university['id'],
+            'name': university['name'],
+            'country': country['name'],
+            'paperCount': university['paperCount'],
+            'authors': authors
+        }
+    }
+
+@api_router.get("/data/author/{country_id}/{university_id}/{author_id}")
+async def get_author(country_id: str, university_id: str, author_id: str):
+    """Get papers for a specific author."""
+    if cached_data is None:
+        load_data()
+    
+    if cached_data is None:
+        raise HTTPException(status_code=500, detail="Data not loaded")
+    
+    # Find country, university, and author
+    country = None
+    for c in cached_data:
+        if c['id'] == country_id:
+            country = c
+            break
+    
+    if not country:
+        raise HTTPException(status_code=404, detail="Country not found")
+    
+    university = None
+    for uni in country['universities']:
+        if uni['id'] == university_id:
+            university = uni
+            break
+    
+    if not university:
+        raise HTTPException(status_code=404, detail="University not found")
+    
+    author = None
+    for a in university['authors']:
+        if a['id'] == author_id:
+            author = a
+            break
+    
+    if not author:
+        raise HTTPException(status_code=404, detail="Author not found")
+    
+    return {'author': author}
+
+@api_router.get("/search")
+async def search(q: Optional[str] = None, year: Optional[int] = None):
+    """Search across all data."""
+    if cached_data is None:
+        load_data()
+    
+    if cached_data is None:
+        raise HTTPException(status_code=500, detail="Data not loaded")
+    
+    results = cached_data
+    
+    # Note: Search filtering should be done on frontend for better performance
+    # This endpoint returns all data, frontend will filter
+    return {'countries': results}
 
 # Include the router in the main app
 app.include_router(api_router)
