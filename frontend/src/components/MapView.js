@@ -101,23 +101,12 @@ const MapView = ({ onCountryClick, selectedCountry, searchTerm, yearFilter }) =>
     loadCountries();
   }, []);
 
-  // Apply search and year filters
+  // Apply search filter (search is handled on map display, not data filtering)
   useEffect(() => {
-    let filtered = countries;
-
-    // Apply search filter
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(country => 
-        country.name.toLowerCase().includes(term)
-      );
-    }
-
-    // Year filter would need to be applied on backend for accurate results
-    // For now, just pass through
-
-    setFilteredCountries(filtered);
-  }, [searchTerm, yearFilter, countries]);
+    // For map view, we always show all countries
+    // Search will be handled when drilling down into details
+    setFilteredCountries(countries);
+  }, [countries]);
 
   // Update map view when country is selected
   useEffect(() => {
