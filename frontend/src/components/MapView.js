@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, CircleMarker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { mockCountries, mockYears } from '../data/mock';
 
 // Component to handle map zoom and pan
 function MapController({ center, zoom }) {
