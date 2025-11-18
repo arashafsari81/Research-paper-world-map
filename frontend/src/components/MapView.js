@@ -75,52 +75,31 @@ const getMarkerSize = (paperCount) => {
   return 8;
 };
 
-const MapView = ({ onCountryClick, selectedCountry, searchTerm, yearFilter, onSearchChange, onYearChange, stats }) => {
-  const [filteredCountries, setFilteredCountries] = useState(mockCountries);
+const MapView = ({ countries = [], onCountryClick, selectedCountry, searchTerm, yearFilter, onSearchChange, onYearChange, stats }) => {
+  const [filteredCountries, setFilteredCountries] = useState([]);
   const [mapCenter, setMapCenter] = useState([20, 0]);
   const [mapZoom, setMapZoom] = useState(2);
 
   useEffect(() => {
-    let filtered = mockCountries;
+    let filtered = countries;
 
     // Apply search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(country => 
-        country.name.toLowerCase().includes(term) ||
-        country.universities.some(uni => 
-          uni.name.toLowerCase().includes(term) ||
-          uni.authors.some(author => 
-            author.name.toLowerCase().includes(term) ||
-            author.papers.some(paper => 
-              paper.title.toLowerCase().includes(term)
-            )
-          )
-        )
+        country.name.toLowerCase().includes(term)
       );
     }
 
-    // Apply year filter
-    if (yearFilter !== 'all') {
-      const year = parseInt(yearFilter);
-      filtered = filtered.map(country => ({
-        ...country,
-        universities: country.universities.map(uni => ({
-          ...uni,
-          authors: uni.authors.map(author => ({
-            ...author,
-            papers: author.papers.filter(paper => paper.year === year)
-          })).filter(author => author.papers.length > 0)
-        })).filter(uni => uni.authors.length > 0)
-      })).filter(country => country.universities.length > 0);
-    }
+    // Note: Year filtering will be handled by the backend API in the future
+    // For now, we'll just filter by country name
 
     setFilteredCountries(filtered);
-  }, [searchTerm, yearFilter]);
+  }, [countries, searchTerm, yearFilter]);
 
   useEffect(() => {
     if (selectedCountry) {
-      const country = mockCountries.find(c => c.id === selectedCountry);
+      const country = countries.find(c => c.id === selectedCountry);
       if (country) {
         setMapCenter([country.lat, country.lng]);
         setMapZoom(5);
@@ -129,7 +108,7 @@ const MapView = ({ onCountryClick, selectedCountry, searchTerm, yearFilter, onSe
       setMapCenter([20, 0]);
       setMapZoom(2);
     }
-  }, [selectedCountry]);
+  }, [selectedCountry, countries]);
 
   return (
     <div className="relative w-full h-screen">
