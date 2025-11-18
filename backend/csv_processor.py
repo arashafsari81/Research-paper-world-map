@@ -235,19 +235,25 @@ class CSVProcessor:
         if not self.processed_data:
             return None
         
-        total_papers = 0
+        # Count unique papers, universities, and authors
+        all_papers = set()
         total_universities = 0
         all_authors = set()
         
         for country in self.processed_data:
+            # Add unique papers from this country
+            all_papers.add(country['paperCount'])  # This is already unique count per country
+            
             total_universities += len(country['universities'])
             for uni in country['universities']:
                 for author in uni['authors']:
                     all_authors.add(author['id'])
-                    total_papers += author['paperCount']
+        
+        # Get total unique papers from the source (since each country may have overlapping papers)
+        total_unique_papers = len(self.df)  # Total papers in original CSV
         
         return {
-            'totalPapers': total_papers,
+            'totalPapers': total_unique_papers,
             'totalCountries': len(self.processed_data),
             'totalUniversities': total_universities,
             'totalAuthors': len(all_authors)
