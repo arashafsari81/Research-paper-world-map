@@ -162,6 +162,10 @@ class CSVProcessor:
                                 author_affiliations[author_name] = (university, uni_idx)
             
             # Build hierarchical structure with correct country-university association
+            if idx < 2:  # Debug first 2 rows
+                print(f"DEBUG row {idx}: paper_universities = {paper_universities}")
+                print(f"DEBUG row {idx}: paper_countries = {paper_countries}")
+            
             for uni_idx, university in paper_universities.items():
                 # University N is associated with Country N
                 if uni_idx in paper_countries:
@@ -169,6 +173,9 @@ class CSVProcessor:
                     country_id = self.generate_id(country)
                     countries_data[country_id]['name'] = country
                     countries_data[country_id]['paper_ids'].add(paper_id)
+                    
+                    if idx < 2:
+                        print(f"DEBUG: Added {country} ({country_id}) for uni {university}")
                     
                     uni_id = self.generate_id(university)
                     countries_data[country_id]['universities'][uni_id]['name'] = university
