@@ -79,12 +79,14 @@ class CSVProcessor:
         # Data structures
         countries_data = defaultdict(lambda: {
             'name': '',
+            'paper_ids': set(),  # Track unique papers per country
             'universities': defaultdict(lambda: {
                 'name': '',
+                'paper_ids': set(),  # Track unique papers per university
                 'authors': defaultdict(lambda: {
                     'name': '',
                     'affiliation': '',
-                    'papers': []
+                    'paper_ids': set()  # Track unique papers per author
                 })
             })
         })
@@ -108,7 +110,7 @@ class CSVProcessor:
                 'authors': []
             }
             
-            # Extract authors
+            # Extract authors with IDs
             authors_in_paper = []
             for i in range(1, 11):
                 author_col = f'Author {i}'
@@ -118,31 +120,31 @@ class CSVProcessor:
                         author_name = self.extract_author_name(author_text)
                         author_id = self.extract_author_id(author_text)
                         if author_name:
-                            authors_in_paper.append(author_name)
+                            authors_in_paper.append((author_name, author_id, i))  # Include index
             
-            paper['authors'] = authors_in_paper
+            paper['authors'] = [name for name, _, _ in authors_in_paper]
             all_papers[paper_id] = paper
             
-            # Extract countries
-            paper_countries = set()
+            # Extract countries with indices
+            paper_countries = {}  # index -> country
             for i in range(1, 19):
                 country_col = f'Country {i}'
                 if country_col in row and pd.notna(row[country_col]):
                     country = self.clean_text(row[country_col])
                     if country:
-                        paper_countries.add(country)
+                        paper_countries[i] = country
             
-            # Extract universities
-            paper_universities = []
+            # Extract universities with indices
+            paper_universities = {}  # index -> university
             for i in range(1, 19):
                 uni_col = f'University {i}'
                 if uni_col in row and pd.notna(row[uni_col]):
                     uni = self.clean_text(row[uni_col])
                     if uni:
-                        paper_universities.append(uni)
+                        paper_universities[i] = uni
             
             # Extract author-affiliation mapping
-            author_affiliations = {}
+            author_affiliations = {}  # author_name -> (university, index)
             for i in range(1, 11):
                 affil_col = f'Author with Affliliation {i}'
                 if affil_col in row and pd.notna(row[affil_col]):
@@ -150,29 +152,38 @@ class CSVProcessor:
                     if affil_text:
                         author_name, university = self.parse_affiliation(affil_text)
                         if author_name and university:
-                            author_affiliations[author_name] = university
+                            # Find the university index
+                            uni_idx = None
+                            for idx, uni_name in paper_universities.items():
+                                if uni_name == university:
+                                    uni_idx = idx
+                                    break
+                            if uni_idx:
+                                author_affiliations[author_name] = (university, uni_idx)
             
-            # Build hierarchical structure
-            for country in paper_countries:
-                country_id = self.generate_id(country)
-                countries_data[country_id]['name'] = country
-                
-                # Associate paper with universities in this country
-                for university in paper_universities:
+            # Build hierarchical structure with correct country-university association
+            for uni_idx, university in paper_universities.items():
+                # University N is associated with Country N
+                if uni_idx in paper_countries:
+                    country = paper_countries[uni_idx]
+                    country_id = self.generate_id(country)
+                    countries_data[country_id]['name'] = country
+                    countries_data[country_id]['paper_ids'].add(paper_id)
+                    
                     uni_id = self.generate_id(university)
                     countries_data[country_id]['universities'][uni_id]['name'] = university
+                    countries_data[country_id]['universities'][uni_id]['paper_ids'].add(paper_id)
                     
                     # Find authors from this university
-                    for author_name in authors_in_paper:
-                        # Normalize author name for matching
-                        normalized_name = self.normalize_author_name(author_name)
-                        if normalized_name in author_affiliations:
-                            if author_affiliations[normalized_name] == university:
-                                author_id = self.generate_id(author_name)
+                    for author_name, author_id_num, author_idx in authors_in_paper:
+                        if author_name in author_affiliations:
+                            affil_uni, affil_uni_idx = author_affiliations[author_name]
+                            if affil_uni == university:
+                                author_id = author_id_num if author_id_num else self.generate_id(author_name)
                                 author_data = countries_data[country_id]['universities'][uni_id]['authors'][author_id]
                                 author_data['name'] = author_name
                                 author_data['affiliation'] = university
-                                author_data['papers'].append(paper_id)
+                                author_data['paper_ids'].add(paper_id)
         
         # Build final structure with counts
         result = []
