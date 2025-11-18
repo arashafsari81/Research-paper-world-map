@@ -25,29 +25,40 @@ function CountryMarker({ country, onClick, isSelected }) {
     const size = getMarkerSize(country.paperCount);
     const divIcon = L.divIcon({
       html: `
-        <div style="
+        <div class="country-marker-wrapper" style="
           width: ${size * 2}px;
           height: ${size * 2}px;
-          border-radius: 50%;
-          background-color: #0891b2;
-          border: 2px solid white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-          cursor: pointer;
-          transition: all 0.2s ease;
+          position: relative;
         ">
-          <span style="
-            color: white;
-            font-weight: bold;
-            font-size: ${size > 12 ? '12px' : '10px'};
-          ">${country.paperCount}</span>
+          <div style="
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #0891b2;
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+          ">
+            <span style="
+              color: white;
+              font-weight: bold;
+              font-size: ${size > 12 ? '12px' : '10px'};
+              user-select: none;
+            ">${country.paperCount}</span>
+          </div>
         </div>
       `,
-      className: 'custom-marker',
+      className: '',
       iconSize: [size * 2, size * 2],
-      iconAnchor: [size, size]
+      iconAnchor: [size, size],
+      popupAnchor: [0, -size]
     });
 
     const marker = L.marker([country.lat, country.lng], { icon: divIcon })
@@ -58,7 +69,8 @@ function CountryMarker({ country, onClick, isSelected }) {
     marker.bindTooltip(country.name, {
       permanent: false,
       direction: 'top',
-      className: 'custom-tooltip'
+      className: 'custom-tooltip',
+      offset: [0, -10]
     });
 
     return () => {
