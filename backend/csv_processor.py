@@ -158,7 +158,7 @@ class CSVProcessor:
                                 if uni_name == university:
                                     uni_idx = idx
                                     break
-                            if uni_idx:
+                            if uni_idx is not None:
                                 author_affiliations[author_name] = (university, uni_idx)
             
             # Build hierarchical structure with correct country-university association
