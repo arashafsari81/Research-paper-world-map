@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-// Use REACT_APP_BACKEND_URL from environment, which contains the full backend URL
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API_BASE = `${BACKEND_URL}/api`;
+// Use REACT_APP_BACKEND_URL from environment
+// If empty, use same origin (production setup with K8s ingress routing /api to backend)
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
+const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 class ApiService {
   async getStats() {
