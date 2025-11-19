@@ -82,6 +82,18 @@ COUNTRY_COORDINATES = {
     'hong kong': {'lat': 22.3193, 'lng': 114.1694},
     'finland': {'lat': 61.9241, 'lng': 25.7482},
     'zambia': {'lat': -13.1339, 'lng': 27.8493},
+    'azerbaijan': {'lat': 40.1431, 'lng': 47.5769},
+    'ecuador': {'lat': -1.8312, 'lng': -78.1834},
+    'estonia': {'lat': 58.5953, 'lng': 25.0136},
+    'fiji': {'lat': -17.7134, 'lng': 178.0650},
+    'hungary': {'lat': 47.1625, 'lng': 19.5033},
+    'kazakhstan': {'lat': 48.0196, 'lng': 66.9237},
+    'lithuania': {'lat': 55.1694, 'lng': 23.8813},
+    'malawi': {'lat': -13.2543, 'lng': 34.3015},
+    'malta': {'lat': 35.9375, 'lng': 14.3754},
+    'namibia': {'lat': -22.9576, 'lng': 18.4904},
+    'serbia': {'lat': 44.0165, 'lng': 21.0059},
+    'sudan': {'lat': 12.8628, 'lng': 30.2176},
 }
 
 def get_country_coordinates(country_name: str) -> dict:
