@@ -161,7 +161,8 @@ const MapView = ({ onCountryClick, selectedCountry, searchTerm, yearFilter }) =>
         center={mapCenter} 
         zoom={mapZoom} 
         style={{ height: '100%', width: '100%' }}
-        zoomControl={true}
+        zoomControl={false}
+        scrollWheelZoom={true}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
