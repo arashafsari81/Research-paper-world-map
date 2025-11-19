@@ -113,12 +113,28 @@ const MapView = ({ onCountryClick, selectedCountry, searchTerm, yearFilter }) =>
     loadCountries();
   }, []);
 
-  // Apply search filter (search is handled on map display, not data filtering)
+  // Apply search and year filters
   useEffect(() => {
-    // For map view, we always show all countries
-    // Search will be handled when drilling down into details
-    setFilteredCountries(countries);
-  }, [countries]);
+    if (!countries || countries.length === 0) {
+      setFilteredCountries([]);
+      return;
+    }
+
+    let filtered = [...countries];
+
+    // Apply search filter - search by country name
+    if (searchTerm && searchTerm.trim()) {
+      const term = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(country => 
+        country.name.toLowerCase().includes(term)
+      );
+    }
+
+    // Note: Year filtering requires backend support to filter papers by year
+    // For now, we show all countries but the year filter will apply when viewing details
+
+    setFilteredCountries(filtered);
+  }, [searchTerm, yearFilter, countries]);
 
   // Update map view when country is selected
   useEffect(() => {
