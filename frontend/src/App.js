@@ -144,14 +144,16 @@ function App() {
         yearFilter={yearFilter}
         onSearchChange={setSearchTerm}
         onYearChange={setYearFilter}
+        onApplyFilters={handleApplyFilters}
+        onClearFilters={handleClearFilters}
         stats={stats}
       />
       <div className="pt-32">
         <MapView 
           onCountryClick={handleCountryClick}
           selectedCountry={selectedCountry?.id}
-          searchTerm={searchTerm}
-          yearFilter={yearFilter}
+          searchTerm={appliedSearchTerm}
+          yearFilter={appliedYearFilter}
         />
       </div>
       <SidePanel
@@ -163,6 +165,8 @@ function App() {
         onUniversityClick={handleUniversityClick}
         onAuthorClick={handleAuthorClick}
         onBack={handleBack}
+        searchTerm={appliedSearchTerm}
+        yearFilter={appliedYearFilter}
       />
     </div>
   );
