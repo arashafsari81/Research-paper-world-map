@@ -13,11 +13,26 @@ const SidePanel = ({
   selectedAuthor,
   onUniversityClick,
   onAuthorClick,
-  onBack
+  onBack,
+  searchTerm = '',
+  yearFilter = 'all'
 }) => {
-  const [searchFilter, setSearchFilter] = React.useState('');
+  const [localSearchFilter, setLocalSearchFilter] = React.useState('');
   
   if (!isOpen) return null;
+  
+  // Helper function to filter papers by year
+  const filterPapersByYear = (papers) => {
+    if (!papers || yearFilter === 'all') return papers;
+    const year = parseInt(yearFilter);
+    return papers.filter(paper => paper.year === year);
+  };
+  
+  // Helper function to check if text matches search
+  const matchesSearch = (text) => {
+    if (!searchTerm) return true;
+    return text.toLowerCase().includes(searchTerm.toLowerCase());
+  };
 
   const renderBreadcrumb = () => {
     const items = [];
