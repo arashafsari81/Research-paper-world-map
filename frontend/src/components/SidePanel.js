@@ -98,7 +98,7 @@ const SidePanel = ({
                   <div className="space-y-1 text-sm text-gray-600 mb-3">
                     <p><strong>Year:</strong> {paper.year}</p>
                     <p><strong>Source:</strong> {paper.source}</p>
-                    <p><strong>Cited by:</strong> {paper.citedBy}</p>
+                    <p><strong>Cited by:</strong> {paper.cited_by}</p>
                     <p className="text-xs text-gray-500"><strong>DOI:</strong> {paper.doi}</p>
                   </div>
                   <div className="mb-3">
