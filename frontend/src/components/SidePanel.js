@@ -220,12 +220,22 @@ const SidePanel = ({
 
     // Country Universities View  
     if (selectedCountry) {
-      // Filter universities based on search
-      const filteredUniversities = searchFilter 
-        ? selectedCountry.universities.filter(uni =>
-            uni.name.toLowerCase().includes(searchFilter.toLowerCase())
-          )
-        : selectedCountry.universities;
+      // Filter universities based on global search and local search
+      let filteredUniversities = selectedCountry.universities || [];
+      
+      // Apply global search term
+      if (searchTerm) {
+        filteredUniversities = filteredUniversities.filter(uni =>
+          matchesSearch(uni.name)
+        );
+      }
+      
+      // Apply local search filter
+      if (localSearchFilter) {
+        filteredUniversities = filteredUniversities.filter(uni =>
+          uni.name.toLowerCase().includes(localSearchFilter.toLowerCase())
+        );
+      }
       
       return (
         <div className="space-y-6">
@@ -236,13 +246,13 @@ const SidePanel = ({
             </Badge>
           </div>
           
-          {/* Search within country */}
+          {/* Local search within country */}
           <div className="relative">
             <input
               type="text"
-              placeholder="Search universities..."
-              value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
+              placeholder="Search universities in this country..."
+              value={localSearchFilter}
+              onChange={(e) => setLocalSearchFilter(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
           </div>
@@ -252,8 +262,11 @@ const SidePanel = ({
               <Building2 className="w-5 h-5 mr-2 text-cyan-600" />
               Universities ({filteredUniversities.length})
             </h3>
-            <div className="grid gap-3">
-              {filteredUniversities.map(university => (
+            {filteredUniversities.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No universities found matching the search</p>
+            ) : (
+              <div className="grid gap-3">
+                {filteredUniversities.map(university => (
                 <button
                   key={university.id}
                   onClick={() => onUniversityClick(university)}
