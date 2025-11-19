@@ -87,14 +87,20 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
             </Select>
           </div>
 
-          {searchTerm && (
+          <Button 
+            onClick={onApplyFilters}
+            className="bg-white text-cyan-600 hover:bg-gray-100 shadow-md font-semibold"
+          >
+            Apply Filters
+          </Button>
+
+          {(searchTerm || yearFilter !== 'all') && (
             <Button 
-              variant="secondary" 
-              size="sm" 
-              onClick={() => onSearchChange('')}
-              className="bg-white hover:bg-gray-100 shadow-md"
+              variant="outline" 
+              onClick={onClearFilters}
+              className="bg-white text-gray-700 hover:bg-gray-100 shadow-md"
             >
-              Clear
+              Clear All
             </Button>
           )}
         </div>
