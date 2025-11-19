@@ -73,7 +73,17 @@ async def get_stats():
     if cached_stats is None:
         raise HTTPException(status_code=500, detail="Data not loaded")
     
-    return cached_stats
+    # Count only countries with valid coordinates (that appear on map)
+    countries_on_map = 0
+    if cached_data:
+        for country in cached_data:
+            if country['lat'] != 0 or country['lng'] != 0:
+                countries_on_map += 1
+    
+    return {
+        **cached_stats,
+        'totalCountries': countries_on_map  # Only show countries visible on map
+    }
 
 @api_router.get("/data/countries")
 async def get_countries():
