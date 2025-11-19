@@ -10,8 +10,13 @@ function App() {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedUniversity, setSelectedUniversity] = useState(null);
   const [selectedAuthor, setSelectedAuthor] = useState(null);
+  
+  // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [yearFilter, setYearFilter] = useState('all');
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState('');
+  const [appliedYearFilter, setAppliedYearFilter] = useState('all');
+  
   const [stats, setStats] = useState({
     totalPapers: 0,
     totalCountries: 0,
@@ -39,6 +44,20 @@ function App() {
 
     loadStats();
   }, []);
+
+  // Handle apply filters
+  const handleApplyFilters = () => {
+    setAppliedSearchTerm(searchTerm);
+    setAppliedYearFilter(yearFilter);
+  };
+
+  // Handle clear filters
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setYearFilter('all');
+    setAppliedSearchTerm('');
+    setAppliedYearFilter('all');
+  };
 
   const handleCountryClick = (country) => {
     setSelectedCountry(country);
