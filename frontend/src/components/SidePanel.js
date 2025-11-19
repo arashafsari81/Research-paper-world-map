@@ -159,6 +159,16 @@ const SidePanel = ({
 
     // University Authors View
     if (selectedUniversity && selectedCountry) {
+      // Filter authors by search term
+      let filteredAuthors = selectedUniversity.authors || [];
+      
+      if (searchTerm) {
+        filteredAuthors = filteredAuthors.filter(author => 
+          matchesSearch(author.name) || 
+          matchesSearch(author.affiliation)
+        );
+      }
+      
       return (
         <div className="space-y-6">
           <div className="bg-gradient-to-br from-cyan-50 to-teal-50 rounded-lg p-6">
@@ -175,10 +185,13 @@ const SidePanel = ({
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
               <User className="w-5 h-5 mr-2 text-cyan-600" />
-              Authors ({selectedUniversity.authors.length})
+              Authors ({filteredAuthors.length})
             </h3>
-            <div className="grid gap-3">
-              {selectedUniversity.authors.map(author => (
+            {filteredAuthors.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No authors found matching the search</p>
+            ) : (
+              <div className="grid gap-3">
+                {filteredAuthors.map(author => (
                 <button
                   key={author.id}
                   onClick={() => onAuthorClick(author)}
