@@ -12,7 +12,7 @@ import {
 
 const YEARS = [2021, 2022, 2023, 2024, 2025];
 
-const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, stats }) => {
+const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyFilters, onClearFilters, stats }) => {
   return (
     <div className="absolute top-0 left-0 right-0 z-[1000] bg-gradient-to-r from-cyan-600 via-cyan-500 to-teal-500 shadow-lg">
       <div className="px-6 py-4">
