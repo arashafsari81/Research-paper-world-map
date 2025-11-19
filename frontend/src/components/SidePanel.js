@@ -84,6 +84,17 @@ const SidePanel = ({
   const renderContent = () => {
     // Author Details View
     if (selectedAuthor && selectedUniversity && selectedCountry) {
+      // Filter papers by year and search term
+      let filteredPapers = filterPapersByYear(selectedAuthor.papers || []);
+      
+      if (searchTerm) {
+        filteredPapers = filteredPapers.filter(paper => 
+          matchesSearch(paper.title) || 
+          matchesSearch(paper.source) ||
+          (paper.authors && paper.authors.some(author => matchesSearch(author)))
+        );
+      }
+      
       return (
         <div className="space-y-6">
           <div className="bg-gradient-to-br from-cyan-50 to-teal-50 rounded-lg p-6">
@@ -96,7 +107,7 @@ const SidePanel = ({
                 </p>
               </div>
               <Badge variant="secondary" className="bg-cyan-100 text-cyan-700">
-                {selectedAuthor.paperCount} Papers
+                {filteredPapers.length} Papers {yearFilter !== 'all' && `(${yearFilter})`}
               </Badge>
             </div>
           </div>
@@ -106,8 +117,11 @@ const SidePanel = ({
               <FileText className="w-5 h-5 mr-2 text-cyan-600" />
               Publications
             </h3>
-            <div className="space-y-4">
-              {selectedAuthor.papers.map(paper => (
+            {filteredPapers.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No papers found matching the filters</p>
+            ) : (
+              <div className="space-y-4">
+                {filteredPapers.map(paper => (
                 <div key={paper.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:border-cyan-300 transition-all duration-200">
                   <h4 className="font-semibold text-gray-800 mb-2 leading-snug">{paper.title}</h4>
                   <div className="space-y-1 text-sm text-gray-600 mb-3">
