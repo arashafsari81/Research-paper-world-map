@@ -181,17 +181,30 @@ class CSVProcessor:
                     countries_data[country_id]['universities'][uni_id]['paper_ids'].add(paper_id)
                     
                     # Find authors from this university
+                    authors_added_to_uni = False
                     for author_name, author_id_num, author_idx in authors_in_paper:
                         # Normalize author name for matching
                         normalized_author = self.normalize_author_name(author_name)
                         if normalized_author in author_affiliations:
                             original_name, affil_uni, affil_uni_idx = author_affiliations[normalized_author]
+                            # Match by university name
                             if affil_uni == university:
                                 author_id = author_id_num if author_id_num else self.generate_id(author_name)
                                 author_data = countries_data[country_id]['universities'][uni_id]['authors'][author_id]
                                 author_data['name'] = author_name  # Use name from Author column (with ID format)
                                 author_data['affiliation'] = university
                                 author_data['paper_ids'].add(paper_id)
+                                authors_added_to_uni = True
+                    
+                    # If no authors were matched to this university, add all authors from the paper
+                    # This handles cases where university is listed but author affiliations don't specify it
+                    if not authors_added_to_uni and len(authors_in_paper) > 0:
+                        for author_name, author_id_num, author_idx in authors_in_paper:
+                            author_id = author_id_num if author_id_num else self.generate_id(author_name)
+                            author_data = countries_data[country_id]['universities'][uni_id]['authors'][author_id]
+                            author_data['name'] = author_name
+                            author_data['affiliation'] = university
+                            author_data['paper_ids'].add(paper_id)
         
         # Build final structure with UNIQUE counts
         result = []
