@@ -268,6 +268,7 @@ class CSVProcessor:
         all_papers = set()
         total_universities = 0
         all_authors = set()
+        total_citations = 0
         
         for country in self.processed_data:
             # Add unique papers from this country
@@ -277,15 +278,22 @@ class CSVProcessor:
             for uni in country['universities']:
                 for author in uni['authors']:
                     all_authors.add(author['id'])
+                    # Add citations from this author's papers
+                    for paper in author['papers']:
+                        total_citations += paper.get('cited_by', 0)
         
         # Get total unique papers from the source (since each country may have overlapping papers)
         total_unique_papers = len(self.df)  # Total papers in original CSV
+        
+        # Calculate total citations from original dataframe (to avoid duplicates)
+        total_unique_citations = int(self.df['Cited by'].sum())
         
         return {
             'totalPapers': total_unique_papers,
             'totalCountries': len(self.processed_data),
             'totalUniversities': total_universities,
-            'totalAuthors': len(all_authors)
+            'totalAuthors': len(all_authors),
+            'totalCitations': total_unique_citations
         }
 
 
