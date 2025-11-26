@@ -75,7 +75,8 @@ function App() {
   const handleUniversityClick = async (university) => {
     try {
       // Fetch full university data with authors
-      const fullUniversity = await ApiService.getUniversity(selectedCountry.id, university.id);
+      const yearParam = appliedYearFilter !== 'all' ? parseInt(appliedYearFilter) : null;
+      const fullUniversity = await ApiService.getUniversity(selectedCountry.id, university.id, yearParam);
       setSelectedUniversity({...university, ...fullUniversity});
       setSelectedAuthor(null);
     } catch (err) {
@@ -86,10 +87,12 @@ function App() {
   const handleAuthorClick = async (author) => {
     try {
       // Fetch full author data with papers
+      const yearParam = appliedYearFilter !== 'all' ? parseInt(appliedYearFilter) : null;
       const fullAuthor = await ApiService.getAuthor(
         selectedCountry.id, 
         selectedUniversity.id, 
-        author.id
+        author.id,
+        yearParam
       );
       setSelectedAuthor(fullAuthor);
     } catch (err) {
