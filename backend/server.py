@@ -31,32 +31,42 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-# Global data cache
-cached_data = None
-cached_stats = None
+# Global data cache - stores data for each year filter
+cached_data = {}  # year -> processed_data
+cached_stats = {}  # year -> stats
 
-def load_data():
-    """Load and process CSV data."""
+def load_data(year_filter: Optional[int] = None):
+    """Load and process CSV data with optional year filter."""
     global cached_data, cached_stats
     
-    if cached_data is not None:
-        return
+    cache_key = year_filter if year_filter else 'all'
+    
+    # Return cached data if available
+    if cache_key in cached_data:
+        return cached_data[cache_key], cached_stats[cache_key]
     
     csv_path = '/app/APU_publications_2021_2025_cleaned_Final.csv'
     if not os.path.exists(csv_path):
         logger.error(f"CSV file not found at {csv_path}")
-        return
+        return None, None
     
     try:
-        processor = CSVProcessor(csv_path)
+        processor = CSVProcessor(csv_path, year_filter=year_filter)
         processor.load_csv().process_data()
-        cached_data = processor.get_processed_data()
-        cached_stats = processor.get_stats()
-        logger.info(f"Data loaded successfully: {cached_stats}")
+        data = processor.get_processed_data()
+        stats = processor.get_stats()
+        
+        # Cache the results
+        cached_data[cache_key] = data
+        cached_stats[cache_key] = stats
+        
+        logger.info(f"Data loaded successfully for year={year_filter}: {stats}")
+        return data, stats
     except Exception as e:
         logger.error(f"Error processing CSV: {e}")
         import traceback
         traceback.print_exc()
+        return None, None
 
 
 # Routes
