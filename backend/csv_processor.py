@@ -19,6 +19,13 @@ class CSVProcessor:
         print(f"Loading CSV from {self.csv_path}...")
         self.df = pd.read_csv(self.csv_path)
         print(f"Loaded {len(self.df)} papers")
+        
+        # Apply year filter if specified
+        if self.year_filter:
+            original_count = len(self.df)
+            self.df = self.df[self.df['Year'] == self.year_filter]
+            print(f"Filtered to year {self.year_filter}: {len(self.df)} papers (from {original_count})")
+        
         return self
     
     def clean_text(self, text):
