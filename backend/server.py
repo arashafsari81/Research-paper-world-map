@@ -116,17 +116,16 @@ async def get_countries(year: Optional[int] = None):
     return {'countries': countries}
 
 @api_router.get("/data/country/{country_id}")
-async def get_country(country_id: str):
-    """Get universities for a specific country."""
-    if cached_data is None:
-        load_data()
+async def get_country(country_id: str, year: Optional[int] = None):
+    """Get universities for a specific country with optional year filter."""
+    data, stats = load_data(year_filter=year)
     
-    if cached_data is None:
+    if data is None:
         raise HTTPException(status_code=500, detail="Data not loaded")
     
     # Find country
     country = None
-    for c in cached_data:
+    for c in data:
         if c['id'] == country_id:
             country = c
             break
