@@ -95,12 +95,13 @@ const MapView = ({ onCountryClick, selectedCountry, searchTerm, yearFilter }) =>
   const [mapZoom, setMapZoom] = useState(2);
   const [loading, setLoading] = useState(true);
 
-  // Load countries on mount
+  // Load countries on mount and when year filter changes
   useEffect(() => {
     const loadCountries = async () => {
       try {
         setLoading(true);
-        const data = await ApiService.getCountries();
+        const yearParam = yearFilter !== 'all' ? parseInt(yearFilter) : null;
+        const data = await ApiService.getCountries(yearParam);
         setCountries(data);
         setFilteredCountries(data);
       } catch (err) {
@@ -111,7 +112,7 @@ const MapView = ({ onCountryClick, selectedCountry, searchTerm, yearFilter }) =>
     };
 
     loadCountries();
-  }, []);
+  }, [yearFilter]);
 
   // Apply search and year filters
   useEffect(() => {
