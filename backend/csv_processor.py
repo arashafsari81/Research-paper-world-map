@@ -8,10 +8,11 @@ from country_coordinates import get_country_coordinates
 
 
 class CSVProcessor:
-    def __init__(self, csv_path: str):
+    def __init__(self, csv_path: str, year_filter: int = None):
         self.csv_path = csv_path
         self.df = None
         self.processed_data = None
+        self.year_filter = year_filter
         
     def load_csv(self):
         """Load CSV file into pandas DataFrame."""
