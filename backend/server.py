@@ -75,23 +75,22 @@ async def root():
     return {"message": "Research Papers World Map API"}
 
 @api_router.get("/stats")
-async def get_stats():
-    """Get overall statistics."""
-    if cached_stats is None:
-        load_data()
+async def get_stats(year: Optional[int] = None):
+    """Get overall statistics with optional year filter."""
+    data, stats = load_data(year_filter=year)
     
-    if cached_stats is None:
+    if stats is None:
         raise HTTPException(status_code=500, detail="Data not loaded")
     
     # Count only countries with valid coordinates (that appear on map)
     countries_on_map = 0
-    if cached_data:
-        for country in cached_data:
+    if data:
+        for country in data:
             if country['lat'] != 0 or country['lng'] != 0:
                 countries_on_map += 1
     
     return {
-        **cached_stats,
+        **stats,
         'totalCountries': countries_on_map  # Only show countries visible on map
     }
 
