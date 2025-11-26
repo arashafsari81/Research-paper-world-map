@@ -200,17 +200,16 @@ async def get_university(country_id: str, university_id: str, year: Optional[int
     }
 
 @api_router.get("/data/author/{country_id}/{university_id}/{author_id}")
-async def get_author(country_id: str, university_id: str, author_id: str):
-    """Get papers for a specific author."""
-    if cached_data is None:
-        load_data()
+async def get_author(country_id: str, university_id: str, author_id: str, year: Optional[int] = None):
+    """Get papers for a specific author with optional year filter."""
+    data, stats = load_data(year_filter=year)
     
-    if cached_data is None:
+    if data is None:
         raise HTTPException(status_code=500, detail="Data not loaded")
     
     # Find country, university, and author
     country = None
-    for c in cached_data:
+    for c in data:
         if c['id'] == country_id:
             country = c
             break
