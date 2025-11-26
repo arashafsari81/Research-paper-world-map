@@ -6,9 +6,10 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 class ApiService {
-  async getStats() {
+  async getStats(year = null) {
     try {
-      const response = await axios.get(`${API_BASE}/stats`);
+      const params = year ? { year } : {};
+      const response = await axios.get(`${API_BASE}/stats`, { params });
       return response.data;
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -16,9 +17,10 @@ class ApiService {
     }
   }
 
-  async getCountries() {
+  async getCountries(year = null) {
     try {
-      const response = await axios.get(`${API_BASE}/data/countries`);
+      const params = year ? { year } : {};
+      const response = await axios.get(`${API_BASE}/data/countries`, { params });
       return response.data.countries;
     } catch (error) {
       console.error('Error fetching countries:', error);
@@ -26,9 +28,10 @@ class ApiService {
     }
   }
 
-  async getCountry(countryId) {
+  async getCountry(countryId, year = null) {
     try {
-      const response = await axios.get(`${API_BASE}/data/country/${countryId}`);
+      const params = year ? { year } : {};
+      const response = await axios.get(`${API_BASE}/data/country/${countryId}`, { params });
       return response.data.country;
     } catch (error) {
       console.error('Error fetching country:', error);
@@ -36,9 +39,10 @@ class ApiService {
     }
   }
 
-  async getUniversity(countryId, universityId) {
+  async getUniversity(countryId, universityId, year = null) {
     try {
-      const response = await axios.get(`${API_BASE}/data/university/${countryId}/${universityId}`);
+      const params = year ? { year } : {};
+      const response = await axios.get(`${API_BASE}/data/university/${countryId}/${universityId}`, { params });
       return response.data.university;
     } catch (error) {
       console.error('Error fetching university:', error);
@@ -46,9 +50,10 @@ class ApiService {
     }
   }
 
-  async getAuthor(countryId, universityId, authorId) {
+  async getAuthor(countryId, universityId, authorId, year = null) {
     try {
-      const response = await axios.get(`${API_BASE}/data/author/${countryId}/${universityId}/${authorId}`);
+      const params = year ? { year } : {};
+      const response = await axios.get(`${API_BASE}/data/author/${countryId}/${universityId}/${authorId}`, { params });
       return response.data.author;
     } catch (error) {
       console.error('Error fetching author:', error);
