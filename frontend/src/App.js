@@ -26,12 +26,13 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load stats on mount
+  // Load stats on mount and when year filter changes
   useEffect(() => {
     const loadStats = async () => {
       try {
         setLoading(true);
-        const data = await ApiService.getStats();
+        const yearParam = appliedYearFilter !== 'all' ? parseInt(appliedYearFilter) : null;
+        const data = await ApiService.getStats(yearParam);
         setStats(data);
         setError(null);
       } catch (err) {
@@ -43,12 +44,17 @@ function App() {
     };
 
     loadStats();
-  }, []);
+  }, [appliedYearFilter]);
 
   // Handle apply filters
   const handleApplyFilters = () => {
     setAppliedSearchTerm(searchTerm);
     setAppliedYearFilter(yearFilter);
+    // Close panel when filters change
+    setIsPanelOpen(false);
+    setSelectedCountry(null);
+    setSelectedUniversity(null);
+    setSelectedAuthor(null);
   };
 
   // Handle clear filters
