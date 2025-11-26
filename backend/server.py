@@ -95,17 +95,16 @@ async def get_stats(year: Optional[int] = None):
     }
 
 @api_router.get("/data/countries")
-async def get_countries():
-    """Get all countries with paper counts and coordinates."""
-    if cached_data is None:
-        load_data()
+async def get_countries(year: Optional[int] = None):
+    """Get all countries with paper counts and coordinates, with optional year filter."""
+    data, stats = load_data(year_filter=year)
     
-    if cached_data is None:
+    if data is None:
         raise HTTPException(status_code=500, detail="Data not loaded")
     
     # Return simplified country data for map
     countries = []
-    for country in cached_data:
+    for country in data:
         countries.append({
             'id': country['id'],
             'name': country['name'],
