@@ -21,7 +21,8 @@ function App() {
     totalPapers: 0,
     totalCountries: 0,
     totalUniversities: 0,
-    totalAuthors: 0
+    totalAuthors: 0,
+    totalCitations: 0
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
