@@ -27,7 +27,7 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
           </div>
           
           {/* Stats */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-5">
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <FileText className="w-4 h-4 text-white" />
@@ -55,6 +55,15 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
                 <span className="text-2xl font-bold text-white">{stats.totalAuthors}</span>
               </div>
               <p className="text-xs text-cyan-50">Authors</p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-2xl font-bold text-white">{stats.totalCitations || 0}</span>
+              </div>
+              <p className="text-xs text-cyan-50">Citations</p>
             </div>
           </div>
         </div>
