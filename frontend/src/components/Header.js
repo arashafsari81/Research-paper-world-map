@@ -18,6 +18,18 @@ const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyFilters, onClearFilters, stats }) => {
   const [showExportMenu, setShowExportMenu] = useState(false);
   
+  // Close menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showExportMenu && !event.target.closest('.export-menu-container')) {
+        setShowExportMenu(false);
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showExportMenu]);
+  
   const handleExport = (type) => {
     const yearParam = yearFilter !== 'all' ? `?year=${yearFilter}` : '';
     const url = `${API_BASE}/export/${type}${yearParam}`;
