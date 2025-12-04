@@ -104,6 +104,7 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
                 </button>
               </div>
             )}
+            </div>
           </div>
           
           {/* Stats */}
