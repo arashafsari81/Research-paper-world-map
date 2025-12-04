@@ -319,9 +319,17 @@ async def get_university(country_id: str, university_id: str, year: Optional[int
     }
 
 @api_router.get("/data/author/{country_id}/{university_id}/{author_id}")
-async def get_author(country_id: str, university_id: str, author_id: str, year: Optional[int] = None):
+async def get_author(country_id: str, university_id: str, author_id: str, year: Optional[int] = None, start_year: Optional[int] = None, end_year: Optional[int] = None):
     """Get papers for a specific author with optional year filter."""
-    data, stats = load_data(year_filter=year)
+    # Determine year filter type
+    if start_year and end_year:
+        year_filter = (start_year, end_year)
+    elif year:
+        year_filter = year
+    else:
+        year_filter = None
+    
+    data, stats = load_data(year_filter=year_filter)
     
     if data is None:
         raise HTTPException(status_code=500, detail="Data not loaded")
