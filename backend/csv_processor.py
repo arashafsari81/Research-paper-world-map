@@ -228,19 +228,28 @@ class CSVProcessor:
                 
                 for author_id, author_data in uni_data['authors'].items():
                     paper_ids = list(author_data['paper_ids'])  # Already a set, so unique
+                    author_papers = [all_papers[pid] for pid in paper_ids if pid in all_papers]
+                    author_citations = sum(p['cited_by'] for p in author_papers)
+                    
                     authors.append({
                         'id': author_id,
                         'name': author_data['name'],
                         'affiliation': author_data['affiliation'],
                         'paperCount': len(paper_ids),
-                        'papers': [all_papers[pid] for pid in paper_ids if pid in all_papers]
+                        'citationCount': author_citations,
+                        'papers': author_papers
                     })
+                
+                # Calculate university citations
+                uni_papers_set = uni_data['paper_ids']
+                uni_citations = sum(all_papers[pid]['cited_by'] for pid in uni_papers_set if pid in all_papers)
                 
                 # Include universities even without author details (papers are tracked)
                 universities.append({
                     'id': uni_id,
                     'name': uni_data['name'],
                     'paperCount': len(uni_data['paper_ids']),  # Unique papers for this university
+                    'citationCount': uni_citations,
                     'authors': sorted(authors, key=lambda x: x['paperCount'], reverse=True) if authors else []
                 })
             
