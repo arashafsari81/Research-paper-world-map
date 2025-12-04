@@ -59,7 +59,7 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
           </div>
           
           {/* Export Dropdown */}
-          <div className="relative">
+          <div className="relative export-menu-container">
             <Button 
               onClick={() => setShowExportMenu(!showExportMenu)}
               className="bg-white text-cyan-600 hover:bg-cyan-50"
