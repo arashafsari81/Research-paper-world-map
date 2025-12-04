@@ -114,10 +114,10 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
             />
           </div>
 
-          <div className="flex items-center gap-2 bg-white rounded-lg shadow-md px-3 py-2">
+          <div className="flex items-center gap-2 bg-white rounded-lg shadow-md px-3 h-10">
             <Filter className="w-4 h-4 text-cyan-600" />
             <Select value={yearFilter} onValueChange={onYearChange}>
-              <SelectTrigger className="w-32 border-0 focus:ring-0">
+              <SelectTrigger className="w-28 border-0 focus:ring-0 h-auto text-sm">
                 <SelectValue placeholder="All Years" />
               </SelectTrigger>
               <SelectContent className="z-[2000]">
