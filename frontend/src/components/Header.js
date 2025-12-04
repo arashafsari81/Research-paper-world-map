@@ -19,7 +19,7 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
   const [showExportMenu, setShowExportMenu] = useState(false);
   
   // Close menu when clicking outside
-  React.useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (showExportMenu && !event.target.closest('.export-menu-container')) {
         setShowExportMenu(false);
