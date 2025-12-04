@@ -53,6 +53,19 @@ class DataCleaner:
         print(f"Cleaning complete. Dataset now has {len(cleaned_df)} papers.")
         return cleaned_df
     
+    def _is_likely_country(self, text: str) -> bool:
+        """Check if text looks like a country name."""
+        # Common country names and patterns
+        common_countries = {'australia', 'malaysia', 'united kingdom', 'united states', 'canada', 'india', 'china', 
+                          'singapore', 'indonesia', 'vietnam', 'thailand', 'iran', 'iraq', 'japan', 'south korea',
+                          'taiwan', 'pakistan', 'bangladesh', 'sri lanka', 'philippines', 'saudi arabia', 'uae',
+                          'egypt', 'nigeria', 'south africa', 'kenya', 'ghana', 'germany', 'france', 'italy', 'spain',
+                          'portugal', 'netherlands', 'belgium', 'sweden', 'norway', 'denmark', 'finland', 'poland',
+                          'russia', 'turkey', 'brazil', 'mexico', 'argentina', 'chile', 'colombia', 'peru'}
+        
+        text_lower = text.lower().strip()
+        return text_lower in common_countries or any(country in text_lower for country in common_countries)
+    
     def _extract_universities_and_countries(self, affiliations_text: str) -> List[Tuple[str, str]]:
         """Extract all unique (university, country) pairs from affiliations text.
         
