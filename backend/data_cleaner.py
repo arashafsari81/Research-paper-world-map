@@ -57,9 +57,14 @@ class DataCleaner:
         """Check if a text part is likely an institution name."""
         text_lower = text.lower()
         institution_keywords = [
+            # English
             'university', 'college', 'institute', 'school', 'academy',
             'center', 'centre', 'department', 'faculty', 'laboratory',
-            'research', 'program', 'programme'
+            'research', 'program', 'programme',
+            # Non-English (common in academic publications)
+            'universidade', 'universidad', 'université', 'universität', 'università',  # Portuguese, Spanish, French, German, Italian
+            'universiti', 'universite', 'universitas',  # Malay/Indonesian, French (alt), Latin
+            'polytechnic', 'academia', 'conservatorio'
         ]
         return any(keyword in text_lower for keyword in institution_keywords)
     
