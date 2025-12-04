@@ -151,14 +151,14 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
 
         {/* Bottom Row: Search and Filters */}
         <div className="flex items-center gap-3">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               type="text"
-              placeholder="Search country, university, author, or paper title..."
+              placeholder="Search by country name..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 bg-white border-0 shadow-md h-11"
+              className="pl-9 pr-4 bg-white border-0 shadow-md h-10 w-80 text-sm"
             />
           </div>
 
