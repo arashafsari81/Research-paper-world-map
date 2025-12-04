@@ -219,6 +219,7 @@ async def get_country(country_id: str, year: Optional[int] = None):
             'id': uni['id'],
             'name': uni['name'],
             'paperCount': uni['paperCount'],
+            'citationCount': uni.get('citationCount', 0),
             'authors': len(uni['authors'])
         })
     
@@ -227,6 +228,7 @@ async def get_country(country_id: str, year: Optional[int] = None):
             'id': country['id'],
             'name': country['name'],
             'paperCount': country['paperCount'],
+            'citationCount': country.get('citationCount', 0),
             'universities': universities
         }
     }
