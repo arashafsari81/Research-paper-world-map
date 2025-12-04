@@ -186,9 +186,17 @@ async def get_stats(year: Optional[int] = None, start_year: Optional[int] = None
     }
 
 @api_router.get("/data/countries")
-async def get_countries(year: Optional[int] = None):
+async def get_countries(year: Optional[int] = None, start_year: Optional[int] = None, end_year: Optional[int] = None):
     """Get all countries with paper counts and coordinates, with optional year filter."""
-    data, stats = load_data(year_filter=year)
+    # Determine year filter type
+    if start_year and end_year:
+        year_filter = (start_year, end_year)
+    elif year:
+        year_filter = year
+    else:
+        year_filter = None
+    
+    data, stats = load_data(year_filter=year_filter)
     
     if data is None:
         raise HTTPException(status_code=500, detail="Data not loaded")
