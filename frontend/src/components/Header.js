@@ -71,13 +71,12 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
     
     console.log('Year filter being applied:', yearValue);
     
-    // Update year filter and apply immediately
+    // Update year filter state
     onYearChange(yearValue);
     
-    // Force apply with the new year value by using a microtask
-    Promise.resolve().then(() => {
-      onApplyFilters();
-    });
+    // Apply filters immediately with the new year value
+    // Pass the yearValue directly to avoid async state update issues
+    onApplyFilters(yearValue);
   };
   
   // Close menu when clicking outside
