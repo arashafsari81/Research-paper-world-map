@@ -21,6 +21,26 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
   const [startYear, setStartYear] = useState('2021');
   const [endYear, setEndYear] = useState('2025');
   
+  // Sync yearFilter prop to local state
+  useEffect(() => {
+    if (yearFilter && yearFilter !== 'all') {
+      if (typeof yearFilter === 'string' && yearFilter.includes('-')) {
+        // Year range format: "2023-2024"
+        const [start, end] = yearFilter.split('-');
+        setStartYear(start);
+        setEndYear(end);
+      } else {
+        // Single year
+        setStartYear(yearFilter);
+        setEndYear(yearFilter);
+      }
+    } else {
+      // Reset to default
+      setStartYear('2021');
+      setEndYear('2025');
+    }
+  }, [yearFilter]);
+  
   // Update year filter when Apply is clicked, not automatically
   const handleApplyWithYearRange = () => {
     let yearValue = 'all';
