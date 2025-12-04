@@ -94,6 +94,10 @@ COUNTRY_COORDINATES = {
     'namibia': {'lat': -22.9576, 'lng': 18.4904},
     'serbia': {'lat': 44.0165, 'lng': 21.0059},
     'sudan': {'lat': 12.8628, 'lng': 30.2176},
+    'comoros': {'lat': -11.6455, 'lng': 43.3333},
+    'chad': {'lat': 15.4542, 'lng': 18.7322},
+    'uganda': {'lat': 1.3733, 'lng': 32.2903},
+    'slovakia': {'lat': 48.6690, 'lng': 19.6990},
 }
 
 def get_country_coordinates(country_name: str) -> dict:
