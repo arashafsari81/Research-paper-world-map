@@ -41,6 +41,35 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
             </div>
           </div>
           
+          {/* Export Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="bg-white text-cyan-600 hover:bg-cyan-50">
+                <Download className="w-4 h-4 mr-2" />
+                Export Data
+                <ChevronDown className="w-4 h-4 ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 bg-white">
+              <DropdownMenuItem onClick={() => handleExport('papers')} className="cursor-pointer">
+                <FileText className="w-4 h-4 mr-2" />
+                Export Papers
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('authors')} className="cursor-pointer">
+                <User className="w-4 h-4 mr-2" />
+                Export Authors
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('universities')} className="cursor-pointer">
+                <Building2 className="w-4 h-4 mr-2" />
+                Export Universities
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('countries')} className="cursor-pointer">
+                <Globe className="w-4 h-4 mr-2" />
+                Export Countries
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           {/* Stats */}
           <div className="flex items-center gap-5">
             <div className="text-center">
