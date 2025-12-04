@@ -54,41 +54,95 @@ class DataCleaner:
         return cleaned_df
     
     def _extract_universities_and_countries(self, affiliations_text: str) -> List[Tuple[str, str]]:
-        """Extract all unique (university, country) pairs from affiliations text."""
+        """Extract all unique (university, country) pairs from affiliations text.
+        
+        Format: "LastName, FirstName, Univ1, City1, Country1, Univ2, City2, Country2; NextAuthor..."
+        """
         universities_countries = []
         seen = set()
         
-        # Split by semicolon
-        parts = affiliations_text.split(';')
+        # Split by semicolon (separates different authors)
+        author_entries = affiliations_text.split(';')
         
-        for part in parts:
-            part = part.strip()
-            if not part:
+        for entry in author_entries:
+            entry = entry.strip()
+            if not entry:
                 continue
             
             # Split by comma
-            comma_parts = [p.strip() for p in part.split(',')]
+            parts = [p.strip() for p in entry.split(',')]
             
-            # Country is typically the last element
-            if len(comma_parts) >= 2:
-                country = comma_parts[-1]
+            if len(parts) < 4:  # Need at least: LastName, FirstName, Institution, Country
+                continue
+            
+            # Skip first two parts (author name: LastName, FirstName)
+            affiliation_parts = parts[2:]
+            
+            # Parse multiple affiliations within this author's entry
+            # Typically groups of 3: Institution, City/State, Country
+            i = 0
+            while i < len(affiliation_parts):
+                # Look for institution (contains university keywords OR is followed by a city/country)
+                current_part = affiliation_parts[i]
                 
-                # Find university (look for parts containing university keywords)
-                university = None
-                for cp in comma_parts:
-                    if any(keyword in cp.lower() for keyword in ['university', 'college', 'institute', 'school', 'polytechnic', 'academy']):
-                        university = cp
-                        break
+                # Check if this looks like an institution
+                has_uni_keyword = any(keyword in current_part.lower() for keyword in 
+                                    ['university', 'college', 'institute', 'school', 'polytechnic', 'academy', 'center', 'centre'])
                 
-                # If no keyword found, take the part after name (usually index 2)
-                if not university and len(comma_parts) >= 3:
-                    university = comma_parts[2]
-                
-                if university and country:
-                    key = (university.lower(), country.lower())
-                    if key not in seen:
-                        seen.add(key)
-                        universities_countries.append((university, country))
+                if has_uni_keyword or i == 0:
+                    # This is likely an institution
+                    university = current_part
+                    
+                    # Next 1-2 parts are location (city, maybe state)
+                    # Last part before next institution is country
+                    country = None
+                    
+                    # Look ahead to find the country
+                    if i + 1 < len(affiliation_parts):
+                        # Check if next part is also an institution (rare case)
+                        next_has_keyword = any(keyword in affiliation_parts[i+1].lower() for keyword in 
+                                             ['university', 'college', 'institute', 'school'])
+                        
+                        if next_has_keyword:
+                            # Next part is another institution, current one has no country
+                            # Skip this one
+                            i += 1
+                            continue
+                        
+                        # Typical case: Institution, City, Country OR Institution, City, State, Country
+                        if i + 2 < len(affiliation_parts):
+                            # Check if i+3 is an institution
+                            if i + 3 < len(affiliation_parts):
+                                part_3 = affiliation_parts[i+3]
+                                if any(keyword in part_3.lower() for keyword in ['university', 'college', 'institute', 'school']):
+                                    # Pattern: Inst, City, Country, NextInst
+                                    country = affiliation_parts[i+2]
+                                    i += 3
+                                else:
+                                    # Pattern: Inst, City, State, Country
+                                    country = affiliation_parts[i+3] if i+3 < len(affiliation_parts) else affiliation_parts[i+2]
+                                    i += 4
+                            else:
+                                # End of list: Inst, City, Country
+                                country = affiliation_parts[i+2]
+                                i += 3
+                        else:
+                            # Only one more part: Inst, Country
+                            country = affiliation_parts[i+1]
+                            i += 2
+                    else:
+                        # No more parts
+                        i += 1
+                        continue
+                    
+                    if country:
+                        key = (university.lower(), country.lower())
+                        if key not in seen:
+                            seen.add(key)
+                            universities_countries.append((university, country))
+                else:
+                    # Not an institution, skip
+                    i += 1
         
         return universities_countries
     
