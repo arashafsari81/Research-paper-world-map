@@ -22,6 +22,12 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyFilters, onClearFilters, stats }) => {
+  const handleExport = (type) => {
+    const yearParam = yearFilter !== 'all' ? `?year=${yearFilter}` : '';
+    const url = `${API_BASE}/export/${type}${yearParam}`;
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="absolute top-0 left-0 right-0 z-[1000] bg-gradient-to-r from-cyan-600 via-cyan-500 to-teal-500 shadow-lg">
       <div className="px-6 py-4">
