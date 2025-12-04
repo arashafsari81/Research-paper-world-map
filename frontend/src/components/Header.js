@@ -1,5 +1,5 @@
-import React from 'react';
-import { Search, Filter, Globe, Building2, User, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Filter, Globe, Building2, User, FileText, Download, ChevronDown } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import {
@@ -9,8 +9,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 
 const YEARS = [2021, 2022, 2023, 2024, 2025];
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
+const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyFilters, onClearFilters, stats }) => {
   return (
