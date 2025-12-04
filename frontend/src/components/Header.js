@@ -59,15 +59,18 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
             </div>
           </div>
           
-          {/* Export Dropdown */}
-          <div className="relative export-menu-container">
-            <Button 
-              onClick={() => setShowExportMenu(!showExportMenu)}
-              className="bg-white text-cyan-600 hover:bg-cyan-50"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export Data
-            </Button>
+          {/* Upload and Export Buttons */}
+          <div className="flex items-center gap-3">
+            <DatasetUpload onUploadSuccess={() => {/* Will reload page */}} />
+            
+            <div className="relative export-menu-container">
+              <Button 
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="bg-white text-cyan-600 hover:bg-cyan-50"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export Data
+              </Button>
             
             {showExportMenu && (
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-[2000]">
