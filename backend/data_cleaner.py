@@ -233,6 +233,69 @@ class DataCleaner:
         name = re.sub(r'[^\w\s]', '', name)
         
         return name
+    
+    def _parse_general_affiliations(self, row) -> List[Dict]:
+        """Parse the general 'Affiliations' column to extract additional institutions.
+        
+        This column has format: Institution, City, [State], Country; Institution2, City2, Country2; ...
+        (without author names)
+        
+        Returns: List of dicts with university and country (no author names)
+        """
+        affiliations_text = str(row.get('Affiliations', ''))
+        
+        if affiliations_text == 'nan' or not affiliations_text:
+            return []
+        
+        # Split by semicolon to get each affiliation
+        affiliation_parts = affiliations_text.split(';')
+        
+        results = []
+        seen = set()  # To avoid duplicates
+        
+        for part in affiliation_parts:
+            part = part.strip()
+            if not part:
+                continue
+            
+            # Split by comma
+            elements = [e.strip() for e in part.split(',')]
+            
+            if len(elements) < 2:
+                continue
+            
+            # Last element is the country
+            country = elements[-1]
+            
+            # Find the main institution
+            main_institution = None
+            for element in elements[:-1]:  # Exclude the country
+                if self._is_likely_institution(element):
+                    # Prefer longer institution names with "University", "Institute", etc.
+                    if main_institution is None:
+                        main_institution = element
+                    else:
+                        element_lower = element.lower()
+                        current_lower = main_institution.lower()
+                        
+                        is_main = any(kw in element_lower for kw in ['university', 'institute', 'college', 'universidade', 'universidad'])
+                        current_is_main = any(kw in current_lower for kw in ['university', 'institute', 'college', 'universidade', 'universidad'])
+                        
+                        if is_main and not current_is_main:
+                            main_institution = element
+                        elif is_main and current_is_main and len(element) > len(main_institution):
+                            main_institution = element
+            
+            if main_institution:
+                key = (main_institution.lower(), country.lower())
+                if key not in seen:
+                    seen.add(key)
+                    results.append({
+                        'university': main_institution,
+                        'country': country
+                    })
+        
+        return results
 
 
 def load_and_clean_csv(csv_path: str) -> pd.DataFrame:
