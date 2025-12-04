@@ -155,7 +155,7 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
           </div>
 
           <Button 
-            onClick={onApplyFilters}
+            onClick={handleApplyWithYearRange}
             className="bg-white text-cyan-600 hover:bg-gray-100 shadow-md font-semibold h-10 text-sm"
           >
             Apply Filters
@@ -165,8 +165,8 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
             <Button 
               variant="outline" 
               onClick={() => {
-                setStartYear('all');
-                setEndYear('all');
+                setStartYear('2021');
+                setEndYear('2025');
                 onClearFilters();
               }}
               className="bg-white text-gray-700 hover:bg-gray-100 shadow-md h-10 text-sm"
