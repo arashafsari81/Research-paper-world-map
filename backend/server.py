@@ -267,7 +267,8 @@ async def get_university(country_id: str, university_id: str, year: Optional[int
             'id': author['id'],
             'name': author['name'],
             'affiliation': author['affiliation'],
-            'paperCount': author['paperCount']
+            'paperCount': author['paperCount'],
+            'citationCount': author.get('citationCount', 0)
         })
     
     return {
@@ -276,6 +277,7 @@ async def get_university(country_id: str, university_id: str, year: Optional[int
             'name': university['name'],
             'country': country['name'],
             'paperCount': university['paperCount'],
+            'citationCount': university.get('citationCount', 0),
             'authors': authors
         }
     }
