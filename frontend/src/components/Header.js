@@ -21,6 +21,23 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
   const [startYear, setStartYear] = useState('all');
   const [endYear, setEndYear] = useState('all');
   
+  // Sync year range changes to parent via yearFilter
+  useEffect(() => {
+    if (startYear !== 'all' && endYear !== 'all') {
+      // Year range selected
+      onYearChange(`${startYear}-${endYear}`);
+    } else if (startYear !== 'all') {
+      // Only start year selected, treat as single year
+      onYearChange(startYear);
+    } else if (endYear !== 'all') {
+      // Only end year selected, treat as single year
+      onYearChange(endYear);
+    } else {
+      // Both are 'all'
+      onYearChange('all');
+    }
+  }, [startYear, endYear, onYearChange]);
+  
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
