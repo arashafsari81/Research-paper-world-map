@@ -23,19 +23,24 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
   
   // Sync yearFilter prop to local state
   useEffect(() => {
+    console.log('Header yearFilter changed to:', yearFilter);
+    
     if (yearFilter && yearFilter !== 'all') {
       if (typeof yearFilter === 'string' && yearFilter.includes('-')) {
         // Year range format: "2023-2024"
         const [start, end] = yearFilter.split('-');
+        console.log('Setting range:', start, '-', end);
         setStartYear(start);
         setEndYear(end);
       } else {
         // Single year
+        console.log('Setting single year:', yearFilter);
         setStartYear(yearFilter);
         setEndYear(yearFilter);
       }
     } else {
       // Reset to default
+      console.log('Resetting to default: 2021-2025');
       setStartYear('2021');
       setEndYear('2025');
     }
