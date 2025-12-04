@@ -66,11 +66,11 @@ class DataCleaner:
     def _parse_author_affiliations(self, author_section: str) -> List[Tuple[str, str, str]]:
         """Parse a single author's affiliation section.
         
-        RULE: In the affiliation string, elements are: [Department], Institution, City, [State], Country
-        The LAST element before the next institution (or end) is ALWAYS the country.
+        RULE: Format is [Department/Faculty], [Sub-unit], Main Institution, City, [State/Province], Country
+        The LAST element is ALWAYS the country.
         
-        Strategy: Find all institutions, then the element just before the next institution
-        (or at the end) is the country for that institution.
+        Strategy: Find the MAIN institution (usually contains "University" and is longest),
+        then the last element is the country.
         
         Returns: List of (author_name, institution, country) tuples
         """
@@ -90,51 +90,36 @@ class DataCleaner:
         if len(affiliation_parts) < 2:  # Need at least Institution, Country
             return []
         
-        # Find all institution indices (skip any institution keywords before index 0)
-        institution_indices = []
-        for i, part in enumerate(affiliation_parts):
+        # The LAST element is ALWAYS the country
+        country = affiliation_parts[-1]
+        
+        # Find the main institution - prefer those with "University", "Institute", etc.
+        # and skip short department names
+        main_institution = None
+        
+        for i, part in enumerate(affiliation_parts[:-1]):  # Exclude the last element (country)
             if self._is_likely_institution(part):
-                # Skip if this looks like a department name before a proper institution
-                # (e.g., "Technology Park" before "Asia Pacific University")
-                if i + 1 < len(affiliation_parts) and self._is_likely_institution(affiliation_parts[i + 1]):
-                    # Next element is also an institution, so current one is likely just a department
-                    # Don't skip it, but the next one will be the main institution
-                    pass
-                institution_indices.append(i)
-        
-        if not institution_indices:
-            return []
-        
-        # For each institution, find its country (the element before the next institution or at the end)
-        results = []
-        
-        for idx, inst_idx in enumerate(institution_indices):
-            institution = affiliation_parts[inst_idx]
-            
-            # Find the range for this institution (from this institution to the next one or end)
-            if idx < len(institution_indices) - 1:
-                # There's another institution after this one
-                next_inst_idx = institution_indices[idx + 1]
-                # Country is the element just before the next institution
-                if next_inst_idx > inst_idx + 1:
-                    country_candidate = affiliation_parts[next_inst_idx - 1]
-                    # Make sure this isn't another institution (like a department name)
-                    if not self._is_likely_institution(country_candidate):
-                        country = country_candidate
-                    else:
-                        # Skip this one, it's probably a sub-unit
-                        continue
+                # Prefer longer institution names with key words like "University"
+                if main_institution is None:
+                    main_institution = part
                 else:
-                    continue  # No space for a country
-            else:
-                # This is the last institution, country is at the end
-                country = affiliation_parts[-1]
-            
-            # Verify the country is not an institution name
-            if not self._is_likely_institution(country):
-                results.append((author_name, institution, country))
+                    # Replace if this one seems more like a main institution
+                    # (contains "university", "college", "institute" and is longer)
+                    part_lower = part.lower()
+                    current_lower = main_institution.lower()
+                    
+                    is_university = any(kw in part_lower for kw in ['university', 'institute', 'college'])
+                    current_is_university = any(kw in current_lower for kw in ['university', 'institute', 'college'])
+                    
+                    if is_university and not current_is_university:
+                        main_institution = part
+                    elif is_university and current_is_university and len(part) > len(main_institution):
+                        main_institution = part
         
-        return results
+        if main_institution:
+            return [(author_name, main_institution, country)]
+        
+        return []
     
     def _extract_universities_and_countries(self, affiliations_text: str) -> List[Tuple[str, str, str]]:
         """Extract ALL (author_name, university, country) tuples from affiliations text.
