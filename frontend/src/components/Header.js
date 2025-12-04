@@ -47,33 +47,48 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
           </div>
           
           {/* Export Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="bg-white text-cyan-600 hover:bg-cyan-50">
-                <Download className="w-4 h-4 mr-2" />
-                Export Data
-                <ChevronDown className="w-4 h-4 ml-2" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-white">
-              <DropdownMenuItem onClick={() => handleExport('papers')} className="cursor-pointer">
-                <FileText className="w-4 h-4 mr-2" />
-                Export Papers
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport('authors')} className="cursor-pointer">
-                <User className="w-4 h-4 mr-2" />
-                Export Authors
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport('universities')} className="cursor-pointer">
-                <Building2 className="w-4 h-4 mr-2" />
-                Export Universities
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport('countries')} className="cursor-pointer">
-                <Globe className="w-4 h-4 mr-2" />
-                Export Countries
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="relative">
+            <Button 
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              className="bg-white text-cyan-600 hover:bg-cyan-50"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export Data
+            </Button>
+            
+            {showExportMenu && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-[2000]">
+                <button
+                  onClick={() => handleExport('papers')}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100 flex items-center text-gray-700 transition-colors"
+                >
+                  <FileText className="w-4 h-4 mr-3 text-cyan-600" />
+                  Export Papers
+                </button>
+                <button
+                  onClick={() => handleExport('authors')}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100 flex items-center text-gray-700 transition-colors"
+                >
+                  <User className="w-4 h-4 mr-3 text-cyan-600" />
+                  Export Authors
+                </button>
+                <button
+                  onClick={() => handleExport('universities')}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100 flex items-center text-gray-700 transition-colors"
+                >
+                  <Building2 className="w-4 h-4 mr-3 text-cyan-600" />
+                  Export Universities
+                </button>
+                <button
+                  onClick={() => handleExport('countries')}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100 flex items-center text-gray-700 rounded-b-lg transition-colors"
+                >
+                  <Globe className="w-4 h-4 mr-3 text-cyan-600" />
+                  Export Countries
+                </button>
+              </div>
+            )}
+          </div>
           
           {/* Stats */}
           <div className="flex items-center gap-5">
