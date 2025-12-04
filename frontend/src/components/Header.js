@@ -23,13 +23,20 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
   
   // Update year filter when Apply is clicked, not automatically
   const handleApplyWithYearRange = () => {
-    if (startYear && endYear && startYear !== endYear) {
-      // Year range selected
-      onYearChange(`${startYear}-${endYear}`);
-    } else if (startYear) {
-      // Single year
-      onYearChange(startYear);
+    let yearValue = 'all';
+    
+    if (startYear && endYear) {
+      if (startYear !== endYear) {
+        // Year range selected
+        yearValue = `${startYear}-${endYear}`;
+      } else {
+        // Same year selected for both
+        yearValue = startYear;
+      }
     }
+    
+    console.log('Year filter being applied:', yearValue);
+    onYearChange(yearValue);
     onApplyFilters();
   };
   
