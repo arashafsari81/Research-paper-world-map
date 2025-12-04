@@ -39,11 +39,15 @@ api_router = APIRouter(prefix="/api")
 cached_data = {}  # year -> processed_data
 cached_stats = {}  # year -> stats
 
-def load_data(year_filter: Optional[int] = None):
-    """Load and process CSV data with optional year filter."""
+def load_data(year_filter=None):
+    """Load and process CSV data with optional year filter (single year or range)."""
     global cached_data, cached_stats
     
-    cache_key = year_filter if year_filter else 'all'
+    # Create cache key that handles both single year and range
+    if isinstance(year_filter, (tuple, list)):
+        cache_key = f"{year_filter[0]}-{year_filter[1]}"
+    else:
+        cache_key = year_filter if year_filter else 'all'
     
     # Return cached data if available
     if cache_key in cached_data:
