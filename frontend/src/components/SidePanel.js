@@ -177,9 +177,14 @@ const SidePanel = ({
               <Globe className="w-4 h-4 mr-1" />
               {selectedCountry.name}
             </p>
-            <Badge variant="secondary" className="bg-cyan-100 text-cyan-700 mt-3">
-              {selectedUniversity.paperCount} Papers
-            </Badge>
+            <div className="flex gap-2 mt-3">
+              <Badge variant="secondary" className="bg-cyan-100 text-cyan-700">
+                {selectedUniversity.paperCount} Papers
+              </Badge>
+              <Badge variant="secondary" className="bg-teal-100 text-teal-700">
+                {selectedUniversity.citationCount || 0} Citations
+              </Badge>
+            </div>
           </div>
 
           <div>
