@@ -98,6 +98,8 @@ COUNTRY_COORDINATES = {
     'chad': {'lat': 15.4542, 'lng': 18.7322},
     'uganda': {'lat': 1.3733, 'lng': 32.2903},
     'slovakia': {'lat': 48.6690, 'lng': 19.6990},
+    'nepal': {'lat': 28.3949, 'lng': 84.1240},
+    'niger': {'lat': 17.6078, 'lng': 8.0817},
 }
 
 def get_country_coordinates(country_name: str) -> dict:
