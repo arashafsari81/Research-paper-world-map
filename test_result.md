@@ -128,15 +128,18 @@ backend:
 
   - task: "API Endpoints for Stats and Data"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "All API endpoints implemented: /api/stats, /api/data/countries, /api/data/country/{id}, /api/data/university/{country_id}/{uni_id}, /api/data/author/{country_id}/{uni_id}/{author_id}, /api/search, /api/export/{type}. Year filtering supported via query param. Need comprehensive testing."
+        - working: true
+          agent: "testing"
+          comment: "VERIFIED - All API endpoints working correctly. /api/stats returns proper statistics, /api/data/countries returns 49 countries with correct structure, drill-down navigation works through Malaysia -> Asia Pacific University -> Author -> Papers with all required fields present. /api/search returns data correctly. Error handling works (404 for invalid country IDs, 422 for invalid parameters)."
 
   - task: "Year Filtering"
     implemented: true
