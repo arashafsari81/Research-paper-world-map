@@ -241,9 +241,14 @@ const SidePanel = ({
         <div className="space-y-6">
           <div className="bg-gradient-to-br from-cyan-50 to-teal-50 rounded-lg p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">{selectedCountry.name}</h2>
-            <Badge variant="secondary" className="bg-cyan-100 text-cyan-700">
-              {selectedCountry.paperCount} Total Papers
-            </Badge>
+            <div className="flex gap-2 mt-3">
+              <Badge variant="secondary" className="bg-cyan-100 text-cyan-700">
+                {selectedCountry.paperCount} Total Papers
+              </Badge>
+              <Badge variant="secondary" className="bg-teal-100 text-teal-700">
+                {selectedCountry.citationCount || 0} Citations
+              </Badge>
+            </div>
           </div>
           
           {/* Local search within country */}
