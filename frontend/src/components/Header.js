@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, Globe, Building2, User, FileText, Download, ChevronDown } from 'lucide-react';
+import { Search, Filter, Globe, Building2, User, FileText, Download } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import {
@@ -9,12 +9,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from './ui/dropdown-menu';
 
 const YEARS = [2021, 2022, 2023, 2024, 2025];
 
@@ -22,10 +16,21 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyFilters, onClearFilters, stats }) => {
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  
   const handleExport = (type) => {
     const yearParam = yearFilter !== 'all' ? `?year=${yearFilter}` : '';
     const url = `${API_BASE}/export/${type}${yearParam}`;
-    window.open(url, '_blank');
+    
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${type}_export_${yearFilter !== 'all' ? yearFilter : 'all_years'}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    setShowExportMenu(false);
   };
 
   return (
