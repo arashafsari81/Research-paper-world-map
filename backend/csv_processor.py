@@ -27,8 +27,16 @@ class CSVProcessor:
         # Apply year filter if specified
         if self.year_filter:
             original_count = len(self.df)
-            self.df = self.df[self.df['Year'] == self.year_filter]
-            print(f"Filtered to year {self.year_filter}: {len(self.df)} papers (from {original_count})")
+            
+            # Check if year_filter is a tuple/list (year range) or single year
+            if isinstance(self.year_filter, (tuple, list)) and len(self.year_filter) == 2:
+                start_year, end_year = self.year_filter
+                self.df = self.df[(self.df['Year'] >= start_year) & (self.df['Year'] <= end_year)]
+                print(f"Filtered to year range {start_year}-{end_year}: {len(self.df)} papers (from {original_count})")
+            else:
+                # Single year filter
+                self.df = self.df[self.df['Year'] == self.year_filter]
+                print(f"Filtered to year {self.year_filter}: {len(self.df)} papers (from {original_count})")
         
         return self
     
