@@ -174,7 +174,7 @@ const MapView = ({ onCountryClick, selectedCountry, searchTerm, yearFilter }) =>
   }
 
   return (
-    <div className="relative w-full h-screen">
+    <div className="absolute inset-0 w-full h-full">
       <MapContainer 
         center={mapCenter} 
         zoom={mapZoom} 
