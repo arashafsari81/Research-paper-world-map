@@ -55,18 +55,23 @@ class DataCleaner:
     
     def _is_likely_country(self, text: str) -> bool:
         """Check if a text part is likely a country name."""
-        # Common countries in academic publications
+        # Comprehensive list of countries found in academic publications
         countries = {
             'malaysia', 'china', 'united states', 'united kingdom', 'australia', 
             'india', 'singapore', 'japan', 'south korea', 'taiwan', 'thailand',
-            'indonesia', 'vietnam', 'philippines', 'canada', 'germany', 'france',
+            'indonesia', 'viet nam', 'vietnam', 'philippines', 'canada', 'germany', 'france',
             'italy', 'spain', 'netherlands', 'sweden', 'norway', 'denmark', 'finland',
-            'switzerland', 'austria', 'belgium', 'poland', 'russia', 'brazil',
-            'mexico', 'argentina', 'chile', 'south africa', 'egypt', 'saudi arabia',
-            'united arab emirates', 'turkey', 'iran', 'pakistan', 'bangladesh',
+            'switzerland', 'austria', 'belgium', 'poland', 'russia', 'russian federation',
+            'brazil', 'mexico', 'argentina', 'chile', 'colombia', 'ecuador',
+            'south africa', 'egypt', 'saudi arabia', 'united arab emirates', 'turkey', 
+            'iran', 'pakistan', 'bangladesh', 'sri lanka', 'iraq', 'yemen', 'libya',
+            'morocco', 'ethiopia', 'nigeria', 'ghana', 'uganda', 'zambia', 'namibia',
+            'botswana', 'malawi', 'sudan', 'chad', 'comoros',
             'new zealand', 'ireland', 'portugal', 'greece', 'czech republic',
-            'hungary', 'romania', 'ukraine', 'israel', 'jordan', 'lebanon',
-            'oman', 'qatar', 'kuwait', 'bahrain', 'hong kong', 'macao'
+            'hungary', 'romania', 'ukraine', 'israel', 'jordan', 'lebanon', 'palestine',
+            'oman', 'qatar', 'kuwait', 'bahrain', 'hong kong', 'macao',
+            'brunei darussalam', 'brunei', 'uzbekistan', 'kazakhstan', 'azerbaijan',
+            'estonia', 'lithuania', 'slovakia', 'serbia', 'malta', 'fiji'
         }
         text_lower = text.lower().strip()
         return text_lower in countries
