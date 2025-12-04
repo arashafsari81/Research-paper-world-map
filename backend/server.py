@@ -49,8 +49,10 @@ def load_data(year_filter: Optional[int] = None):
     if cache_key in cached_data:
         return cached_data[cache_key], cached_stats[cache_key]
     
-    # Try new uncleaned file first, fallback to old cleaned file
-    csv_path = '/app/Scopus_Data_APU_2021_Dec_2025_Complete.csv'
+    # Priority: uploaded file > default uncleaned file > old cleaned file
+    csv_path = '/app/uploaded_dataset.csv'
+    if not os.path.exists(csv_path):
+        csv_path = '/app/Scopus_Data_APU_2021_Dec_2025_Complete.csv'
     if not os.path.exists(csv_path):
         csv_path = '/app/APU_publications_2021_2025_cleaned_Final.csv'
     if not os.path.exists(csv_path):
