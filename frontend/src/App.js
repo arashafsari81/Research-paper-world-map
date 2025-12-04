@@ -49,9 +49,10 @@ function App() {
   }, [appliedYearFilter]);
 
   // Handle apply filters
-  const handleApplyFilters = () => {
+  const handleApplyFilters = (customYearFilter = null) => {
     setAppliedSearchTerm(searchTerm);
-    setAppliedYearFilter(yearFilter);
+    // Use custom year filter if provided, otherwise use current state
+    setAppliedYearFilter(customYearFilter !== null ? customYearFilter : yearFilter);
     // Close panel when filters change
     setIsPanelOpen(false);
     setSelectedCountry(null);
