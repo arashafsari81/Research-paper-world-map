@@ -32,7 +32,8 @@ function App() {
     const loadStats = async () => {
       try {
         setLoading(true);
-        const yearParam = appliedYearFilter !== 'all' ? parseInt(appliedYearFilter) : null;
+        // Pass the year filter as-is (can be single year or range like "2021-2024")
+        const yearParam = appliedYearFilter !== 'all' ? appliedYearFilter : null;
         const data = await ApiService.getStats(yearParam);
         setStats(data);
         setError(null);
