@@ -158,15 +158,18 @@ backend:
 
   - task: "Excel Export Functionality"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
         - working: "NA"
           agent: "main"
           comment: "Excel export endpoints implemented for papers, authors, universities, and countries. Uses openpyxl library. Respects year filter. Need to test all export types with and without year filter."
+        - working: true
+          agent: "testing"
+          comment: "VERIFIED - All Excel export endpoints working correctly. Papers export (205KB all years, 56KB for 2025), Authors export (160KB all years, 53KB for 2025), Universities export (32KB all years, 18KB for 2025), Countries export (7KB all years, 6KB for 2025). All exports return proper Excel files with correct content-type headers and respect year filtering."
 
 frontend:
   - task: "Interactive Map with Country Markers"
