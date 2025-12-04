@@ -48,7 +48,15 @@ class ApiService {
 
   async getCountry(countryId, year = null) {
     try {
-      const params = year ? { year } : {};
+      let params = {};
+      if (year && year !== 'all') {
+        if (typeof year === 'string' && year.includes('-')) {
+          const [start_year, end_year] = year.split('-').map(y => parseInt(y));
+          params = { start_year, end_year };
+        } else {
+          params = { year: parseInt(year) };
+        }
+      }
       const response = await axios.get(`${API_BASE}/data/country/${countryId}`, { params });
       return response.data.country;
     } catch (error) {
@@ -59,7 +67,15 @@ class ApiService {
 
   async getUniversity(countryId, universityId, year = null) {
     try {
-      const params = year ? { year } : {};
+      let params = {};
+      if (year && year !== 'all') {
+        if (typeof year === 'string' && year.includes('-')) {
+          const [start_year, end_year] = year.split('-').map(y => parseInt(y));
+          params = { start_year, end_year };
+        } else {
+          params = { year: parseInt(year) };
+        }
+      }
       const response = await axios.get(`${API_BASE}/data/university/${countryId}/${universityId}`, { params });
       return response.data.university;
     } catch (error) {
