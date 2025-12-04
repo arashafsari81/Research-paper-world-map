@@ -100,7 +100,8 @@ const MapView = ({ onCountryClick, selectedCountry, searchTerm, yearFilter }) =>
     const loadCountries = async () => {
       try {
         setLoading(true);
-        const yearParam = yearFilter !== 'all' ? parseInt(yearFilter) : null;
+        // Pass yearFilter as-is (can be single year or range like "2021-2024")
+        const yearParam = yearFilter !== 'all' ? yearFilter : null;
         const data = await ApiService.getCountries(yearParam);
         setCountries(data);
         setFilteredCountries(data);
