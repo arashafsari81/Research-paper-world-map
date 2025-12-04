@@ -153,8 +153,8 @@ const MapView = ({ onCountryClick, selectedCountry, searchTerm, yearFilter }) =>
 
   const handleCountryClick = async (country) => {
     try {
-      // Fetch full country data with universities
-      const yearParam = yearFilter !== 'all' ? parseInt(yearFilter) : null;
+      // Fetch full country data with universities (yearFilter can be single year or range)
+      const yearParam = yearFilter !== 'all' ? yearFilter : null;
       const fullCountry = await ApiService.getCountry(country.id, yearParam);
       onCountryClick({...country, ...fullCountry});
     } catch (err) {
