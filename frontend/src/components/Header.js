@@ -18,6 +18,8 @@ const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyFilters, onClearFilters, stats }) => {
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [startYear, setStartYear] = useState('all');
+  const [endYear, setEndYear] = useState('all');
   
   // Close menu when clicking outside
   useEffect(() => {
