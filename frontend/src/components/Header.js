@@ -131,7 +131,7 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
 
           <Button 
             onClick={onApplyFilters}
-            className="bg-white text-cyan-600 hover:bg-gray-100 shadow-md font-semibold"
+            className="bg-white text-cyan-600 hover:bg-gray-100 shadow-md font-semibold h-10 text-sm"
           >
             Apply Filters
           </Button>
@@ -140,7 +140,7 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
             <Button 
               variant="outline" 
               onClick={onClearFilters}
-              className="bg-white text-gray-700 hover:bg-gray-100 shadow-md"
+              className="bg-white text-gray-700 hover:bg-gray-100 shadow-md h-10 text-sm"
             >
               Clear All
             </Button>
