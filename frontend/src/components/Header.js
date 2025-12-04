@@ -193,6 +193,17 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
               Clear All
             </Button>
           )}
+          
+          <div className="ml-auto flex items-center gap-2">
+            <DatasetUpload onUploadSuccess={() => {/* Will reload page */}} />
+            <Button 
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              className="bg-white text-cyan-600 hover:bg-cyan-50 shadow-md"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+          </div>
         </div>
       </div>
     </div>
