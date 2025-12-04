@@ -17,8 +17,12 @@ class CSVProcessor:
     def load_csv(self):
         """Load CSV file into pandas DataFrame."""
         print(f"Loading CSV from {self.csv_path}...")
-        self.df = pd.read_csv(self.csv_path)
-        print(f"Loaded {len(self.df)} papers")
+        
+        # Import cleaner
+        from data_cleaner import load_and_clean_csv
+        
+        # Load and auto-clean if needed
+        self.df = load_and_clean_csv(self.csv_path)
         
         # Apply year filter if specified
         if self.year_filter:
