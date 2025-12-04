@@ -76,8 +76,8 @@ function App() {
 
   const handleUniversityClick = async (university) => {
     try {
-      // Fetch full university data with authors
-      const yearParam = appliedYearFilter !== 'all' ? parseInt(appliedYearFilter) : null;
+      // Fetch full university data with authors (yearFilter can be single year or range)
+      const yearParam = appliedYearFilter !== 'all' ? appliedYearFilter : null;
       const fullUniversity = await ApiService.getUniversity(selectedCountry.id, university.id, yearParam);
       setSelectedUniversity({...university, ...fullUniversity});
       setSelectedAuthor(null);
@@ -88,8 +88,8 @@ function App() {
 
   const handleAuthorClick = async (author) => {
     try {
-      // Fetch full author data with papers
-      const yearParam = appliedYearFilter !== 'all' ? parseInt(appliedYearFilter) : null;
+      // Fetch full author data with papers (yearFilter can be single year or range)
+      const yearParam = appliedYearFilter !== 'all' ? appliedYearFilter : null;
       const fullAuthor = await ApiService.getAuthor(
         selectedCountry.id, 
         selectedUniversity.id, 
