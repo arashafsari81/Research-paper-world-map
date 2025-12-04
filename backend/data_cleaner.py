@@ -71,20 +71,26 @@ class DataCleaner:
         # Parse author names with IDs from "Author full names"
         author_name_id_map = {}
         if author_full_names and author_full_names != 'nan':
-            # Format: "Name1 (ID1); Name2 (ID2); ..."
+            # Format: "LastName, FirstName (ID1); LastName2, FirstName2 (ID2); ..."
             parts = author_full_names.split(';')
             for part in parts:
                 part = part.strip()
                 match = re.search(r'^(.+?)\s*\((\d+)\)$', part)
                 if match:
-                    name = match.group(1).strip()
+                    full_name = match.group(1).strip()
                     author_id = match.group(2).strip()
-                    author_name_id_map[name] = author_id
+                    # Also create mapping with just last name
+                    if ',' in full_name:
+                        last_name = full_name.split(',')[0].strip()
+                        author_name_id_map[last_name] = author_id
+                    author_name_id_map[full_name] = author_id
         
         # Parse Authors with affiliations
-        # Format: "Author1, Univ1, City1, Country1; Author2, Univ2, City2, Country2; ..."
+        # Format: "LastName, FirstName, Dept/Univ, City, State/Province, Country; ..."
+        # Author can have multiple affiliations (multiple institution entries)
         affiliation_entries = authors_with_affil.split(';')
         
+        current_author = None
         for entry in affiliation_entries:
             entry = entry.strip()
             if not entry:
@@ -93,46 +99,50 @@ class DataCleaner:
             # Split by comma
             parts = [p.strip() for p in entry.split(',')]
             
-            if len(parts) >= 4:  # Author, University, City, Country (minimum)
-                author_name = parts[0]
-                
-                # Find university (could be multiple words before city/country)
-                # Strategy: Last part is country, second-to-last is city, rest is university
-                country = parts[-1]
-                city = parts[-2]
-                university_parts = parts[1:-2]
-                university = ', '.join(university_parts) if university_parts else parts[1]
+            if len(parts) < 2:
+                continue
+            
+            # Check if this starts a new author (first two parts look like "LastName, FirstName")
+            # Heuristic: if first part is relatively short and second part is also short, it's likely a name
+            is_new_author = (len(parts[0].split()) <= 3 and len(parts[1].split()) <= 2 and 
+                           not any(word in parts[0].lower() for word in ['university', 'college', 'school', 'institute', 'department']))
+            
+            if is_new_author:
+                # New author entry
+                last_name = parts[0]
+                first_name = parts[1] if len(parts) > 1 else ''
+                full_name = f"{last_name}, {first_name}"
                 
                 # Get author ID
-                author_id = author_name_id_map.get(author_name, '')
-                if not author_id and author_ids:
-                    # Try to match by position
-                    if len(authors_data) < len(author_ids):
-                        author_id = author_ids[len(authors_data)]
+                author_id = author_name_id_map.get(full_name, author_name_id_map.get(last_name, ''))
+                if not author_id and len(authors_data) < len(author_ids):
+                    author_id = author_ids[len(authors_data)]
                 
-                authors_data.append({
-                    'name': author_name,
-                    'id': author_id,
-                    'university': university,
-                    'city': city,
-                    'country': country
-                })
-            elif len(parts) >= 2:  # At least Author, University
-                author_name = parts[0]
-                university = parts[1] if len(parts) > 1 else ''
-                country = parts[-1] if len(parts) >= 3 else ''
-                
-                author_id = author_name_id_map.get(author_name, '')
-                if not author_id and author_ids:
-                    if len(authors_data) < len(author_ids):
-                        author_id = author_ids[len(authors_data)]
-                
-                authors_data.append({
-                    'name': author_name,
-                    'id': author_id,
-                    'university': university,
-                    'country': country
-                })
+                # Extract affiliation info
+                # Format after name: Institution, City, State/Province, Country
+                if len(parts) >= 3:
+                    country = parts[-1]
+                    # Institution is everything between first_name and country
+                    institution_parts = parts[2:-1] if len(parts) > 3 else [parts[2]]
+                    # Take the first institution as primary university
+                    university = institution_parts[0] if institution_parts else parts[2]
+                    
+                    current_author = {
+                        'name': full_name,
+                        'id': author_id,
+                        'university': university,
+                        'country': country
+                    }
+                    authors_data.append(current_author)
+                else:
+                    # Minimal info
+                    current_author = {
+                        'name': full_name,
+                        'id': author_id,
+                        'university': '',
+                        'country': ''
+                    }
+                    authors_data.append(current_author)
         
         return authors_data
 
