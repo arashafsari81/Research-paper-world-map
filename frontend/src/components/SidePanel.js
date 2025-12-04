@@ -208,9 +208,14 @@ const SidePanel = ({
                         {author.name}
                       </h4>
                       <p className="text-sm text-gray-600">{author.affiliation}</p>
-                      <Badge variant="outline" className="mt-2">
-                        {author.paperCount} {author.paperCount === 1 ? 'Paper' : 'Papers'}
-                      </Badge>
+                      <div className="flex gap-2 mt-2">
+                        <Badge variant="outline">
+                          {author.paperCount} {author.paperCount === 1 ? 'Paper' : 'Papers'}
+                        </Badge>
+                        <Badge variant="outline" className="bg-teal-50 text-teal-700 border-teal-200">
+                          {author.citationCount || 0} Citations
+                        </Badge>
+                      </div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-cyan-600 transition-colors" />
                   </div>
