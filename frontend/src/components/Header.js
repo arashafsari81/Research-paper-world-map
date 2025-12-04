@@ -18,25 +18,20 @@ const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyFilters, onClearFilters, stats }) => {
   const [showExportMenu, setShowExportMenu] = useState(false);
-  const [startYear, setStartYear] = useState('all');
-  const [endYear, setEndYear] = useState('all');
+  const [startYear, setStartYear] = useState('2021');
+  const [endYear, setEndYear] = useState('2025');
   
-  // Sync year range changes to parent via yearFilter
-  useEffect(() => {
-    if (startYear !== 'all' && endYear !== 'all') {
+  // Update year filter when Apply is clicked, not automatically
+  const handleApplyWithYearRange = () => {
+    if (startYear && endYear && startYear !== endYear) {
       // Year range selected
       onYearChange(`${startYear}-${endYear}`);
-    } else if (startYear !== 'all') {
-      // Only start year selected, treat as single year
+    } else if (startYear) {
+      // Single year
       onYearChange(startYear);
-    } else if (endYear !== 'all') {
-      // Only end year selected, treat as single year
-      onYearChange(endYear);
-    } else {
-      // Both are 'all'
-      onYearChange('all');
     }
-  }, [startYear, endYear, onYearChange]);
+    onApplyFilters();
+  };
   
   // Close menu when clicking outside
   useEffect(() => {
