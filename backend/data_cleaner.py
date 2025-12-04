@@ -27,13 +27,20 @@ class DataCleaner:
         print("Cleaning uncleaned dataset...")
         cleaned_df = self.df.copy()
         
-        # Parse Authors with affiliations
+        # Parse Authors with affiliations AND plain Affiliations
         for idx, row in cleaned_df.iterrows():
+            # Get author-specific affiliations
             authors_data = self._parse_authors_with_affiliations(row)
             
+            # Also parse the general Affiliations column for additional institutions
+            additional_affiliations = self._parse_general_affiliations(row)
+            
+            # Combine both sources
+            all_affiliations = authors_data + additional_affiliations
+            
             # Add parsed data to row
-            for i, author_data in enumerate(authors_data, 1):
-                if i <= 10:  # Limit to 10 authors
+            for i, author_data in enumerate(all_affiliations, 1):
+                if i <= 18:  # Limit to 18 (to capture more affiliations)
                     # Author column
                     if 'name' in author_data and 'id' in author_data:
                         cleaned_df.at[idx, f'Author {i}'] = f"{author_data['name']} ({author_data['id']})"
