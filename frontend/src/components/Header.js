@@ -118,12 +118,24 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
 
           <div className="flex items-center gap-2 bg-white rounded-lg shadow-md px-3 h-10">
             <Filter className="w-4 h-4 text-cyan-600" />
-            <Select value={yearFilter} onValueChange={onYearChange}>
-              <SelectTrigger className="w-28 border-0 focus:ring-0 h-auto text-sm">
-                <SelectValue placeholder="All Years" />
+            <Select value={startYear} onValueChange={setStartYear}>
+              <SelectTrigger className="w-24 border-0 focus:ring-0 h-auto text-sm">
+                <SelectValue placeholder="From" />
               </SelectTrigger>
               <SelectContent className="z-[2000]">
-                <SelectItem value="all">All Years</SelectItem>
+                <SelectItem value="all">All</SelectItem>
+                {YEARS.map(year => (
+                  <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <span className="text-gray-400 text-sm">to</span>
+            <Select value={endYear} onValueChange={setEndYear}>
+              <SelectTrigger className="w-24 border-0 focus:ring-0 h-auto text-sm">
+                <SelectValue placeholder="To" />
+              </SelectTrigger>
+              <SelectContent className="z-[2000]">
+                <SelectItem value="all">All</SelectItem>
                 {YEARS.map(year => (
                   <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
                 ))}
