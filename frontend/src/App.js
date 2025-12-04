@@ -148,17 +148,19 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <Header 
-        searchTerm={searchTerm}
-        yearFilter={yearFilter}
-        onSearchChange={setSearchTerm}
-        onYearChange={setYearFilter}
-        onApplyFilters={handleApplyFilters}
-        onClearFilters={handleClearFilters}
-        stats={stats}
-      />
-      <div className="pt-32">
+    <div className="flex flex-col h-screen overflow-hidden">
+      <div className="flex-shrink-0">
+        <Header 
+          searchTerm={searchTerm}
+          yearFilter={yearFilter}
+          onSearchChange={setSearchTerm}
+          onYearChange={setYearFilter}
+          onApplyFilters={handleApplyFilters}
+          onClearFilters={handleClearFilters}
+          stats={stats}
+        />
+      </div>
+      <div className="flex-1 relative overflow-hidden">
         <MapView 
           onCountryClick={handleCountryClick}
           selectedCountry={selectedCountry?.id}
