@@ -56,8 +56,14 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
     }
     
     console.log('Year filter being applied:', yearValue);
+    
+    // Set year first, then wait a tick before applying filters
     onYearChange(yearValue);
-    onApplyFilters();
+    
+    // Use setTimeout to ensure yearFilter state is updated before applying
+    setTimeout(() => {
+      onApplyFilters();
+    }, 0);
   };
   
   // Close menu when clicking outside
