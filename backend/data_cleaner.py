@@ -167,8 +167,7 @@ class DataCleaner:
     def _parse_authors_with_affiliations(self, row) -> List[Dict]:
         """Parse 'Authors with affiliations' field.
         
-        Strategy: Extract ALL unique universities and countries, then assign
-        ALL authors to EACH university (since we don't know exact author-university mapping).
+        Strategy: Extract author-specific affiliations from the complex field.
         """
         # Get raw data
         authors_with_affil = str(row.get('Authors with affiliations', ''))
@@ -177,8 +176,8 @@ class DataCleaner:
         if authors_with_affil == 'nan' or not authors_with_affil:
             return []
         
-        # Parse all authors with IDs
-        author_list = []
+        # Build a mapping of author names to IDs from "Author full names" field
+        author_id_map = {}
         if author_full_names and author_full_names != 'nan':
             parts = author_full_names.split(';')
             for part in parts:
@@ -187,23 +186,56 @@ class DataCleaner:
                 if match:
                     full_name = match.group(1).strip()
                     author_id = match.group(2).strip()
-                    author_list.append((full_name, author_id))
+                    # Normalize name for matching (handle both "Last, First" and "First Last" formats)
+                    name_normalized = self._normalize_name_for_matching(full_name)
+                    author_id_map[name_normalized] = (full_name, author_id)
         
-        # Extract all unique (university, country) pairs
-        universities_countries = self._extract_universities_and_countries(authors_with_affil)
+        # Extract all (author_name, university, country) tuples
+        affiliations = self._extract_universities_and_countries(authors_with_affil)
         
-        # Create author entries: each author × each university
+        # Create author entries with matched IDs
         authors_data = []
-        for university, country in universities_countries:
-            for full_name, author_id in author_list:
-                authors_data.append({
-                    'name': full_name,
-                    'id': author_id,
-                    'university': university,
-                    'country': country
-                })
+        for affil_author_name, university, country in affiliations:
+            # Try to match this author to get their ID
+            name_normalized = self._normalize_name_for_matching(affil_author_name)
+            
+            if name_normalized in author_id_map:
+                full_name, author_id = author_id_map[name_normalized]
+            else:
+                # Use the name from affiliations if no match
+                full_name = affil_author_name
+                author_id = None
+            
+            authors_data.append({
+                'name': full_name,
+                'id': author_id,
+                'university': university,
+                'country': country
+            })
         
         return authors_data
+    
+    def _normalize_name_for_matching(self, name: str) -> str:
+        """Normalize a name for fuzzy matching between different formats.
+        
+        Handles: "Last, First" and "First Last" formats
+        """
+        if not name:
+            return ''
+        
+        name = name.lower().strip()
+        
+        # If name contains comma, it's "Last, First" - convert to "first last"
+        if ',' in name:
+            parts = [p.strip() for p in name.split(',', 1)]
+            if len(parts) == 2:
+                name = f"{parts[1]} {parts[0]}"
+        
+        # Remove extra whitespace and special characters
+        name = ' '.join(name.split())
+        name = re.sub(r'[^\w\s]', '', name)
+        
+        return name
 
 
 def load_and_clean_csv(csv_path: str) -> pd.DataFrame:
