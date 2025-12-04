@@ -53,29 +53,6 @@ class DataCleaner:
         print(f"Cleaning complete. Dataset now has {len(cleaned_df)} papers.")
         return cleaned_df
     
-    def _is_likely_country(self, text: str) -> bool:
-        """Check if a text part is likely a country name."""
-        # Comprehensive list of countries found in academic publications
-        countries = {
-            'malaysia', 'china', 'united states', 'united kingdom', 'australia', 
-            'india', 'singapore', 'japan', 'south korea', 'taiwan', 'thailand',
-            'indonesia', 'viet nam', 'vietnam', 'philippines', 'canada', 'germany', 'france',
-            'italy', 'spain', 'netherlands', 'sweden', 'norway', 'denmark', 'finland',
-            'switzerland', 'austria', 'belgium', 'poland', 'russia', 'russian federation',
-            'brazil', 'mexico', 'argentina', 'chile', 'colombia', 'ecuador',
-            'south africa', 'egypt', 'saudi arabia', 'united arab emirates', 'turkey', 
-            'iran', 'pakistan', 'bangladesh', 'sri lanka', 'iraq', 'yemen', 'libya',
-            'morocco', 'ethiopia', 'nigeria', 'ghana', 'uganda', 'zambia', 'namibia',
-            'botswana', 'malawi', 'sudan', 'chad', 'comoros',
-            'new zealand', 'ireland', 'portugal', 'greece', 'czech republic',
-            'hungary', 'romania', 'ukraine', 'israel', 'jordan', 'lebanon', 'palestine',
-            'oman', 'qatar', 'kuwait', 'bahrain', 'hong kong', 'macao',
-            'brunei darussalam', 'brunei', 'uzbekistan', 'kazakhstan', 'azerbaijan',
-            'estonia', 'lithuania', 'slovakia', 'serbia', 'malta', 'fiji'
-        }
-        text_lower = text.lower().strip()
-        return text_lower in countries
-    
     def _is_likely_institution(self, text: str) -> bool:
         """Check if a text part is likely an institution name."""
         text_lower = text.lower()
@@ -89,11 +66,14 @@ class DataCleaner:
     def _parse_author_affiliations(self, author_section: str) -> List[Tuple[str, str, str]]:
         """Parse a single author's affiliation section.
         
+        RULE: The LAST comma-separated element is ALWAYS the country.
+        After finding countries, work backwards to find institutions.
+        
         Returns: List of (author_name, institution, country) tuples
         """
         parts = [p.strip() for p in author_section.split(',')]
         
-        if len(parts) < 3:
+        if len(parts) < 4:  # Need at least: LastName, FirstName, Institution, Country
             return []
         
         # First two parts are LastName, FirstName
@@ -104,40 +84,36 @@ class DataCleaner:
         # Remaining parts are affiliations
         affiliation_parts = parts[2:]
         
-        # Find all country indices in the remaining parts
-        country_indices = []
-        for i, part in enumerate(affiliation_parts):
-            if self._is_likely_country(part):
-                country_indices.append(i)
-        
-        if not country_indices:
-            # No countries found, can't parse affiliations properly
+        if len(affiliation_parts) == 0:
             return []
         
-        # Extract (institution, country) pairs
+        # THE LAST ELEMENT IS ALWAYS THE COUNTRY
+        # Find all countries by looking for the last non-institution element before each new institution
         results = []
         
-        for country_idx in country_indices:
-            country = affiliation_parts[country_idx]
+        i = len(affiliation_parts) - 1  # Start from the end
+        
+        while i >= 0:
+            # The current position is a country (last element of a location group)
+            country = affiliation_parts[i]
             
-            # Look backwards from country to find the institution
-            # The institution is typically 1-3 positions before the country
+            # Now search backwards to find the institution for this country
             institution = None
             
-            # Search backwards up to 4 positions to find institution keyword
-            search_start = max(0, country_idx - 4)
-            for i in range(country_idx - 1, search_start - 1, -1):
-                if self._is_likely_institution(affiliation_parts[i]):
-                    institution = affiliation_parts[i]
+            # Search backwards for institution keywords
+            for j in range(i - 1, -1, -1):
+                if self._is_likely_institution(affiliation_parts[j]):
+                    institution = affiliation_parts[j]
+                    # Move i to just before this institution to process next group
+                    i = j - 1
                     break
             
-            # If no institution found, take the part immediately before country
-            # (might be a city, but better than nothing)
-            if not institution and country_idx > 0:
-                institution = affiliation_parts[country_idx - 1]
-            
+            # If we found an institution, add this affiliation
             if institution:
                 results.append((author_name, institution, country))
+            else:
+                # No more institutions found, we're done
+                break
         
         return results
     
