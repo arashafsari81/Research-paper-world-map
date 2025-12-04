@@ -83,6 +83,76 @@ def load_data(year_filter: Optional[int] = None):
 async def root():
     return {"message": "Research Papers World Map API"}
 
+@api_router.post("/upload-dataset")
+async def upload_dataset(file: UploadFile = File(...)):
+    """Upload a new CSV dataset to replace the current one."""
+    global cached_data, cached_stats
+    
+    # Validate file type
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="Only CSV files are allowed")
+    
+    try:
+        # Save the uploaded file
+        upload_path = '/app/uploaded_dataset.csv'
+        with open(upload_path, 'wb') as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Clear the cache to force reload with new data
+        cached_data.clear()
+        cached_stats.clear()
+        
+        # Try to load and validate the new dataset
+        try:
+            data, stats = load_data()
+            if data is None or stats is None:
+                # Remove the invalid file
+                os.remove(upload_path)
+                raise HTTPException(status_code=400, detail="Invalid CSV format. Please ensure the CSV has the required columns.")
+            
+            logger.info(f"New dataset uploaded successfully: {stats}")
+            return {
+                "message": "Dataset uploaded successfully",
+                "stats": stats,
+                "filename": file.filename
+            }
+        except Exception as e:
+            # Remove the invalid file
+            if os.path.exists(upload_path):
+                os.remove(upload_path)
+            raise HTTPException(status_code=400, detail=f"Error processing CSV: {str(e)}")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading dataset: {e}")
+        raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}")
+
+@api_router.get("/current-dataset-info")
+async def get_current_dataset_info():
+    """Get information about the currently loaded dataset."""
+    # Check which file is being used
+    if os.path.exists('/app/uploaded_dataset.csv'):
+        dataset_source = "uploaded"
+        file_path = '/app/uploaded_dataset.csv'
+    elif os.path.exists('/app/Scopus_Data_APU_2021_Dec_2025_Complete.csv'):
+        dataset_source = "default"
+        file_path = '/app/Scopus_Data_APU_2021_Dec_2025_Complete.csv'
+    else:
+        dataset_source = "legacy"
+        file_path = '/app/APU_publications_2021_2025_cleaned_Final.csv'
+    
+    # Get file stats
+    file_stat = os.stat(file_path)
+    file_size_mb = file_stat.st_size / (1024 * 1024)
+    
+    return {
+        "source": dataset_source,
+        "file_path": file_path,
+        "file_size_mb": round(file_size_mb, 2),
+        "last_modified": datetime.fromtimestamp(file_stat.st_mtime).isoformat()
+    }
+
 @api_router.get("/stats")
 async def get_stats(year: Optional[int] = None):
     """Get overall statistics with optional year filter."""
