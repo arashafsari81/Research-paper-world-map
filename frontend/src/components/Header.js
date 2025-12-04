@@ -20,6 +20,7 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [startYear, setStartYear] = useState('2021');
   const [endYear, setEndYear] = useState('2025');
+  const [yearError, setYearError] = useState('');
   
   // Sync yearFilter prop to local state
   useEffect(() => {
