@@ -53,6 +53,45 @@ class DataCleaner:
         print(f"Cleaning complete. Dataset now has {len(cleaned_df)} papers.")
         return cleaned_df
     
+    def _extract_universities_and_countries(self, affiliations_text: str) -> List[Tuple[str, str]]:
+        """Extract all unique (university, country) pairs from affiliations text."""
+        universities_countries = []
+        seen = set()
+        
+        # Split by semicolon
+        parts = affiliations_text.split(';')
+        
+        for part in parts:
+            part = part.strip()
+            if not part:
+                continue
+            
+            # Split by comma
+            comma_parts = [p.strip() for p in part.split(',')]
+            
+            # Country is typically the last element
+            if len(comma_parts) >= 2:
+                country = comma_parts[-1]
+                
+                # Find university (look for parts containing university keywords)
+                university = None
+                for cp in comma_parts:
+                    if any(keyword in cp.lower() for keyword in ['university', 'college', 'institute', 'school', 'polytechnic', 'academy']):
+                        university = cp
+                        break
+                
+                # If no keyword found, take the part after name (usually index 2)
+                if not university and len(comma_parts) >= 3:
+                    university = comma_parts[2]
+                
+                if university and country:
+                    key = (university.lower(), country.lower())
+                    if key not in seen:
+                        seen.add(key)
+                        universities_countries.append((university, country))
+        
+        return universities_countries
+    
     def _parse_authors_with_affiliations(self, row) -> List[Dict]:
         """Parse 'Authors with affiliations' field into structured data.
         
