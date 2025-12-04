@@ -158,9 +158,17 @@ async def get_current_dataset_info():
     }
 
 @api_router.get("/stats")
-async def get_stats(year: Optional[int] = None):
-    """Get overall statistics with optional year filter."""
-    data, stats = load_data(year_filter=year)
+async def get_stats(year: Optional[int] = None, start_year: Optional[int] = None, end_year: Optional[int] = None):
+    """Get overall statistics with optional year filter (single year or range)."""
+    # Determine year filter type
+    if start_year and end_year:
+        year_filter = (start_year, end_year)
+    elif year:
+        year_filter = year
+    else:
+        year_filter = None
+    
+    data, stats = load_data(year_filter=year_filter)
     
     if stats is None:
         raise HTTPException(status_code=500, detail="Data not loaded")
