@@ -86,7 +86,15 @@ class ApiService {
 
   async getAuthor(countryId, universityId, authorId, year = null) {
     try {
-      const params = year ? { year } : {};
+      let params = {};
+      if (year && year !== 'all') {
+        if (typeof year === 'string' && year.includes('-')) {
+          const [start_year, end_year] = year.split('-').map(y => parseInt(y));
+          params = { start_year, end_year };
+        } else {
+          params = { year: parseInt(year) };
+        }
+      }
       const response = await axios.get(`${API_BASE}/data/author/${countryId}/${universityId}/${authorId}`, { params });
       return response.data.author;
     } catch (error) {
