@@ -152,7 +152,7 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
             <div className="relative export-menu-container">
               <Button 
                 onClick={() => setShowExportMenu(!showExportMenu)}
-                className="bg-white text-cyan-600 hover:bg-cyan-50 shadow-md"
+                className="bg-white text-cyan-600 hover:bg-cyan-50 shadow-md h-10 text-sm"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Export
