@@ -8,7 +8,7 @@ from country_coordinates import get_country_coordinates
 
 
 class CSVProcessor:
-    def __init__(self, csv_path: str, year_filter: int = None):
+    def __init__(self, csv_path: str, year_filter = None):
         self.csv_path = csv_path
         self.df = None
         self.processed_data = None
