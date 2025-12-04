@@ -9,6 +9,13 @@ from country_coordinates import get_country_coordinates
 
 class CSVProcessor:
     def __init__(self, csv_path: str, year_filter = None):
+        """
+        Initialize CSV processor.
+        
+        Args:
+            csv_path: Path to the CSV file
+            year_filter: Single year (int) or year range (tuple/list of 2 ints) to filter data
+        """
         self.csv_path = csv_path
         self.df = None
         self.processed_data = None
