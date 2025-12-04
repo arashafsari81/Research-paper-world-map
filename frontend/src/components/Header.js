@@ -175,30 +175,37 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
             />
           </div>
 
-          <div className="flex items-center gap-2 bg-white rounded-lg shadow-md px-3 h-10">
-            <Filter className="w-4 h-4 text-cyan-600" />
-            <span className="text-xs text-gray-600 font-medium">Year:</span>
-            <Select value={startYear} onValueChange={setStartYear}>
-              <SelectTrigger className="w-20 border-0 focus:ring-0 h-auto text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="z-[2000]">
-                {YEARS.map(year => (
-                  <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <span className="text-gray-400 text-xs">-</span>
-            <Select value={endYear} onValueChange={setEndYear}>
-              <SelectTrigger className="w-20 border-0 focus:ring-0 h-auto text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="z-[2000]">
-                {YEARS.map(year => (
-                  <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="relative">
+            <div className={`flex items-center gap-2 bg-white rounded-lg shadow-md px-3 h-10 ${yearError ? 'border-2 border-red-400' : ''}`}>
+              <Filter className="w-4 h-4 text-cyan-600" />
+              <span className="text-xs text-gray-600 font-medium">Year:</span>
+              <Select value={startYear} onValueChange={(val) => { setStartYear(val); setYearError(''); }}>
+                <SelectTrigger className="w-20 border-0 focus:ring-0 h-auto text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[2000]">
+                  {YEARS.map(year => (
+                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-gray-400 text-xs">-</span>
+              <Select value={endYear} onValueChange={(val) => { setEndYear(val); setYearError(''); }}>
+                <SelectTrigger className="w-20 border-0 focus:ring-0 h-auto text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[2000]">
+                  {YEARS.map(year => (
+                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {yearError && (
+              <div className="absolute top-full left-0 mt-1 text-xs text-red-600 bg-red-50 px-2 py-1 rounded shadow-sm whitespace-nowrap">
+                {yearError}
+              </div>
+            )}
           </div>
 
           <Button 
