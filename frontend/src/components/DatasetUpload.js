@@ -59,7 +59,7 @@ const DatasetUpload = ({ onUploadSuccess }) => {
     <div className="inline-block">
       <label
         htmlFor="csv-upload"
-        className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-teal-600 border border-teal-600 rounded-lg cursor-pointer transition-colors text-sm font-medium"
+        className="inline-flex items-center gap-2 px-4 h-10 bg-white hover:bg-gray-50 text-teal-600 border border-teal-600 rounded-lg cursor-pointer transition-colors text-sm font-medium"
       >
         {uploading ? (
           <>
