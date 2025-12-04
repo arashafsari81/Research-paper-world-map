@@ -48,7 +48,10 @@ def load_data(year_filter: Optional[int] = None):
     if cache_key in cached_data:
         return cached_data[cache_key], cached_stats[cache_key]
     
-    csv_path = '/app/APU_publications_2021_2025_cleaned_Final.csv'
+    # Try new uncleaned file first, fallback to old cleaned file
+    csv_path = '/app/Scopus_Data_APU_2021_Dec_2025_Complete.csv'
+    if not os.path.exists(csv_path):
+        csv_path = '/app/APU_publications_2021_2025_cleaned_Final.csv'
     if not os.path.exists(csv_path):
         logger.error(f"CSV file not found at {csv_path}")
         return None, None
