@@ -49,6 +49,14 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
   
   // Update year filter when Apply is clicked, not automatically
   const handleApplyWithYearRange = () => {
+    // Validate year range
+    if (parseInt(startYear) > parseInt(endYear)) {
+      setYearError('Start year cannot be greater than end year');
+      return;
+    }
+    
+    setYearError(''); // Clear any previous errors
+    
     let yearValue = 'all';
     
     if (startYear && endYear) {
@@ -63,13 +71,13 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
     
     console.log('Year filter being applied:', yearValue);
     
-    // Set year first, then wait a tick before applying filters
+    // Update year filter and apply immediately
     onYearChange(yearValue);
     
-    // Use setTimeout to ensure yearFilter state is updated before applying
-    setTimeout(() => {
+    // Force apply with the new year value by using a microtask
+    Promise.resolve().then(() => {
       onApplyFilters();
-    }, 0);
+    });
   };
   
   // Close menu when clicking outside
