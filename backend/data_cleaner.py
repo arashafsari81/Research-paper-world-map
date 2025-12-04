@@ -66,8 +66,10 @@ class DataCleaner:
     def _parse_author_affiliations(self, author_section: str) -> List[Tuple[str, str, str]]:
         """Parse a single author's affiliation section.
         
-        RULE: The LAST comma-separated element is ALWAYS the country.
-        After finding countries, work backwards to find institutions.
+        RULE: In the affiliation string, elements are: Institution, City, [State], Country
+        The LAST element before the next institution (or end) is ALWAYS the country.
+        
+        Strategy: Find all institutions, then the next country after each institution is its country.
         
         Returns: List of (author_name, institution, country) tuples
         """
@@ -84,36 +86,38 @@ class DataCleaner:
         # Remaining parts are affiliations
         affiliation_parts = parts[2:]
         
-        if len(affiliation_parts) == 0:
+        if len(affiliation_parts) < 2:  # Need at least Institution, Country
             return []
         
-        # THE LAST ELEMENT IS ALWAYS THE COUNTRY
-        # Find all countries by looking for the last non-institution element before each new institution
+        # Find all institution indices
+        institution_indices = []
+        for i, part in enumerate(affiliation_parts):
+            if self._is_likely_institution(part):
+                institution_indices.append(i)
+        
+        if not institution_indices:
+            return []
+        
+        # For each institution, find its country (the element before the next institution or at the end)
         results = []
         
-        i = len(affiliation_parts) - 1  # Start from the end
-        
-        while i >= 0:
-            # The current position is a country (last element of a location group)
-            country = affiliation_parts[i]
+        for idx, inst_idx in enumerate(institution_indices):
+            institution = affiliation_parts[inst_idx]
             
-            # Now search backwards to find the institution for this country
-            institution = None
-            
-            # Search backwards for institution keywords
-            for j in range(i - 1, -1, -1):
-                if self._is_likely_institution(affiliation_parts[j]):
-                    institution = affiliation_parts[j]
-                    # Move i to just before this institution to process next group
-                    i = j - 1
-                    break
-            
-            # If we found an institution, add this affiliation
-            if institution:
-                results.append((author_name, institution, country))
+            # Find the range for this institution (from this institution to the next one or end)
+            if idx < len(institution_indices) - 1:
+                # There's another institution after this one
+                next_inst_idx = institution_indices[idx + 1]
+                # Country is the element just before the next institution
+                if next_inst_idx > inst_idx + 1:
+                    country = affiliation_parts[next_inst_idx - 1]
+                else:
+                    continue  # No space for a country
             else:
-                # No more institutions found, we're done
-                break
+                # This is the last institution, country is at the end
+                country = affiliation_parts[-1]
+            
+            results.append((author_name, institution, country))
         
         return results
     
