@@ -8,7 +8,17 @@ const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 class ApiService {
   async getStats(year = null) {
     try {
-      const params = year ? { year } : {};
+      let params = {};
+      if (year && year !== 'all') {
+        if (typeof year === 'string' && year.includes('-')) {
+          // Year range format: "2021-2024"
+          const [start_year, end_year] = year.split('-').map(y => parseInt(y));
+          params = { start_year, end_year };
+        } else {
+          // Single year
+          params = { year: parseInt(year) };
+        }
+      }
       const response = await axios.get(`${API_BASE}/stats`, { params });
       return response.data;
     } catch (error) {
