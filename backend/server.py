@@ -243,17 +243,230 @@ async def get_author(country_id: str, university_id: str, author_id: str, year: 
 @api_router.get("/search")
 async def search(q: Optional[str] = None, year: Optional[int] = None):
     """Search across all data."""
-    if cached_data is None:
-        load_data()
+    data, stats = load_data(year_filter=year)
     
-    if cached_data is None:
+    if data is None:
         raise HTTPException(status_code=500, detail="Data not loaded")
-    
-    results = cached_data
     
     # Note: Search filtering should be done on frontend for better performance
     # This endpoint returns all data, frontend will filter
-    return {'countries': results}
+    return {'countries': data}
+
+@api_router.get("/export/papers")
+async def export_papers(year: Optional[int] = None):
+    """Export all paper titles to Excel."""
+    data, stats = load_data(year_filter=year)
+    
+    if data is None:
+        raise HTTPException(status_code=500, detail="Data not loaded")
+    
+    # Create workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Papers"
+    
+    # Headers
+    ws.append(["#", "Title", "Year", "Source", "Citations", "DOI", "Authors"])
+    
+    # Collect all unique papers
+    papers_dict = {}
+    for country in data:
+        for uni in country['universities']:
+            for author in uni['authors']:
+                for paper in author['papers']:
+                    if paper['id'] not in papers_dict:
+                        papers_dict[paper['id']] = paper
+    
+    # Add papers
+    for idx, (paper_id, paper) in enumerate(papers_dict.items(), 1):
+        ws.append([
+            idx,
+            paper['title'],
+            paper['year'],
+            paper['source'],
+            paper.get('cited_by', 0),
+            paper.get('doi', ''),
+            ', '.join(paper.get('authors', []))
+        ])
+    
+    # Adjust column widths
+    ws.column_dimensions['B'].width = 60
+    ws.column_dimensions['D'].width = 40
+    ws.column_dimensions['F'].width = 30
+    ws.column_dimensions['G'].width = 50
+    
+    # Save to BytesIO
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    filename = f"papers_export_{year if year else 'all_years'}.xlsx"
+    
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@api_router.get("/export/authors")
+async def export_authors(year: Optional[int] = None):
+    """Export all authors to Excel."""
+    data, stats = load_data(year_filter=year)
+    
+    if data is None:
+        raise HTTPException(status_code=500, detail="Data not loaded")
+    
+    # Create workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Authors"
+    
+    # Headers
+    ws.append(["#", "Author Name", "Author ID", "Affiliation", "Country", "Paper Count"])
+    
+    # Collect all unique authors
+    authors_dict = {}
+    for country in data:
+        for uni in country['universities']:
+            for author in uni['authors']:
+                if author['id'] not in authors_dict:
+                    authors_dict[author['id']] = {
+                        'name': author['name'],
+                        'id': author['id'],
+                        'affiliation': author['affiliation'],
+                        'country': country['name'],
+                        'paperCount': author['paperCount']
+                    }
+    
+    # Add authors
+    for idx, (author_id, author) in enumerate(authors_dict.items(), 1):
+        ws.append([
+            idx,
+            author['name'],
+            author['id'],
+            author['affiliation'],
+            author['country'],
+            author['paperCount']
+        ])
+    
+    # Adjust column widths
+    ws.column_dimensions['B'].width = 40
+    ws.column_dimensions['C'].width = 20
+    ws.column_dimensions['D'].width = 50
+    ws.column_dimensions['E'].width = 25
+    
+    # Save to BytesIO
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    filename = f"authors_export_{year if year else 'all_years'}.xlsx"
+    
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@api_router.get("/export/countries")
+async def export_countries(year: Optional[int] = None):
+    """Export all countries to Excel."""
+    data, stats = load_data(year_filter=year)
+    
+    if data is None:
+        raise HTTPException(status_code=500, detail="Data not loaded")
+    
+    # Create workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Countries"
+    
+    # Headers
+    ws.append(["#", "Country Name", "Paper Count", "Universities Count", "Latitude", "Longitude"])
+    
+    # Add countries
+    for idx, country in enumerate(data, 1):
+        ws.append([
+            idx,
+            country['name'],
+            country['paperCount'],
+            len(country['universities']),
+            country['lat'],
+            country['lng']
+        ])
+    
+    # Adjust column widths
+    ws.column_dimensions['B'].width = 30
+    
+    # Save to BytesIO
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    filename = f"countries_export_{year if year else 'all_years'}.xlsx"
+    
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@api_router.get("/export/universities")
+async def export_universities(year: Optional[int] = None):
+    """Export all universities to Excel."""
+    data, stats = load_data(year_filter=year)
+    
+    if data is None:
+        raise HTTPException(status_code=500, detail="Data not loaded")
+    
+    # Create workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Universities"
+    
+    # Headers
+    ws.append(["#", "University Name", "Country", "Paper Count", "Authors Count"])
+    
+    # Collect all universities
+    universities_list = []
+    for country in data:
+        for uni in country['universities']:
+            universities_list.append({
+                'name': uni['name'],
+                'country': country['name'],
+                'paperCount': uni['paperCount'],
+                'authorsCount': len(uni['authors'])
+            })
+    
+    # Sort by paper count
+    universities_list.sort(key=lambda x: x['paperCount'], reverse=True)
+    
+    # Add universities
+    for idx, uni in enumerate(universities_list, 1):
+        ws.append([
+            idx,
+            uni['name'],
+            uni['country'],
+            uni['paperCount'],
+            uni['authorsCount']
+        ])
+    
+    # Adjust column widths
+    ws.column_dimensions['B'].width = 60
+    ws.column_dimensions['C'].width = 25
+    
+    # Save to BytesIO
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    filename = f"universities_export_{year if year else 'all_years'}.xlsx"
+    
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 # Include the router in the main app
 app.include_router(api_router)
