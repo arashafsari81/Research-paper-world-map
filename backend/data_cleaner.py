@@ -54,24 +54,26 @@ class DataCleaner:
         return cleaned_df
     
     def _parse_authors_with_affiliations(self, row) -> List[Dict]:
-        """Parse 'Authors with affiliations' field into structured data."""
-        authors_data = []
+        """Parse 'Authors with affiliations' field into structured data.
         
+        Extracts ALL unique universities and countries, creating separate entries
+        for each institution mentioned in the paper.
+        """
         # Get raw data
         authors_with_affil = str(row.get('Authors with affiliations', ''))
         author_ids_str = str(row.get('Author(s) ID', ''))
         author_full_names = str(row.get('Author full names', ''))
         
         if authors_with_affil == 'nan' or not authors_with_affil:
-            return authors_data
+            return []
         
         # Parse author IDs
         author_ids = [aid.strip() for aid in author_ids_str.split(';') if aid.strip() and aid != 'nan']
         
         # Parse author names with IDs from "Author full names"
         author_name_id_map = {}
+        author_list = []
         if author_full_names and author_full_names != 'nan':
-            # Format: "LastName, FirstName (ID1); LastName2, FirstName2 (ID2); ..."
             parts = author_full_names.split(';')
             for part in parts:
                 part = part.strip()
@@ -79,70 +81,97 @@ class DataCleaner:
                 if match:
                     full_name = match.group(1).strip()
                     author_id = match.group(2).strip()
-                    # Also create mapping with just last name
+                    author_list.append((full_name, author_id))
                     if ',' in full_name:
                         last_name = full_name.split(',')[0].strip()
-                        author_name_id_map[last_name] = author_id
-                    author_name_id_map[full_name] = author_id
+                        author_name_id_map[last_name] = (full_name, author_id)
+                    author_name_id_map[full_name] = (full_name, author_id)
         
-        # Parse Authors with affiliations
-        # Format: "LastName, FirstName, Dept/Univ, City, State/Province, Country; ..."
-        # Author can have multiple affiliations (multiple institution entries)
+        # Parse Authors with affiliations to extract ALL affiliations
+        # Format: "LastName, FirstName, Institution1, City1, State1, Country1, Institution2, City2, Country2; NextAuthor..."
         affiliation_entries = authors_with_affil.split(';')
         
-        current_author = None
+        # Track unique universities and countries from this paper
+        universities_countries = []  # List of (university, country) tuples
+        
         for entry in affiliation_entries:
             entry = entry.strip()
             if not entry:
                 continue
             
-            # Split by comma
             parts = [p.strip() for p in entry.split(',')]
-            
-            if len(parts) < 2:
+            if len(parts) < 3:
                 continue
             
-            # Check if this starts a new author (first two parts look like "LastName, FirstName")
-            # Heuristic: if first part is relatively short and second part is also short, it's likely a name
-            is_new_author = (len(parts[0].split()) <= 3 and len(parts[1].split()) <= 2 and 
-                           not any(word in parts[0].lower() for word in ['university', 'college', 'school', 'institute', 'department']))
+            # Check if starts with author name (first part looks like last name, second like first name)
+            first_part_words = parts[0].split()
+            second_part_words = parts[1].split() if len(parts) > 1 else []
             
-            if is_new_author:
-                # New author entry
-                last_name = parts[0]
-                first_name = parts[1] if len(parts) > 1 else ''
-                full_name = f"{last_name}, {first_name}"
+            is_author_name = (
+                len(first_part_words) <= 3 and 
+                len(second_part_words) <= 2 and
+                not any(word in parts[0].lower() for word in ['university', 'college', 'school', 'institute', 'department', 'center', 'centre'])
+            )
+            
+            if is_author_name:
+                # This entry starts with an author name
+                # Format: LastName, FirstName, Inst1, City1, State1, Country1, [Inst2, City2, Country2, ...]
+                # Parse all institutions for this author
+                remaining_parts = parts[2:]  # Everything after FirstName
                 
-                # Get author ID
-                author_id = author_name_id_map.get(full_name, author_name_id_map.get(last_name, ''))
-                if not author_id and len(authors_data) < len(author_ids):
-                    author_id = author_ids[len(authors_data)]
-                
-                # Extract affiliation info
-                # Format after name: Institution, City, State/Province, Country
-                if len(parts) >= 3:
-                    country = parts[-1]
-                    # Institution is everything between first_name and country
-                    institution_parts = parts[2:-1] if len(parts) > 3 else [parts[2]]
-                    # Take the first institution as primary university
-                    university = institution_parts[0] if institution_parts else parts[2]
-                    
-                    current_author = {
+                # Group remaining parts by institution (every ~3-4 parts is one affiliation)
+                # Strategy: Country is typically last, work backwards
+                i = 0
+                while i < len(remaining_parts):
+                    # Look for country (last element in group)
+                    # Typically: Institution, City, [State], Country
+                    if i + 2 < len(remaining_parts):
+                        # Try to identify where this affiliation ends
+                        # Country names are typically short and don't contain keywords
+                        potential_country = remaining_parts[i+2] if i+2 < len(remaining_parts) else None
+                        
+                        # Check if next element looks like an institution (starts new affiliation)
+                        if i+3 < len(remaining_parts):
+                            next_part = remaining_parts[i+3]
+                            next_looks_like_institution = any(word in next_part.lower() for word in ['university', 'college', 'school', 'institute', 'department'])
+                            
+                            if next_looks_like_institution:
+                                # Current group: Institution, City, Country
+                                university = remaining_parts[i]
+                                country = remaining_parts[i+2] if i+2 < len(remaining_parts) else remaining_parts[-1]
+                                universities_countries.append((university, country))
+                                i += 3
+                                continue
+                        
+                        # Default: take 3-4 elements as one affiliation
+                        university = remaining_parts[i]
+                        country = remaining_parts[min(i+3, len(remaining_parts)-1)]
+                        universities_countries.append((university, country))
+                        i += 4
+                    else:
+                        # Not enough parts, skip
+                        break
+        
+        # Now create author entries for each unique university-country combination
+        authors_data = []
+        seen_universities = set()
+        
+        for university, country in universities_countries:
+            # Avoid duplicate universities
+            uni_key = university.lower()
+            if uni_key in seen_universities:
+                continue
+            seen_universities.add(uni_key)
+            
+            # Assign authors to this university (distribute all authors across all universities)
+            for idx, (full_name, author_id) in enumerate(author_list):
+                if len(authors_data) < 100:  # Reasonable limit
+                    authors_data.append({
                         'name': full_name,
                         'id': author_id,
                         'university': university,
                         'country': country
-                    }
-                    authors_data.append(current_author)
-                else:
-                    # Minimal info
-                    current_author = {
-                        'name': full_name,
-                        'id': author_id,
-                        'university': '',
-                        'country': ''
-                    }
-                    authors_data.append(current_author)
+                    })
         
         return authors_data
 
