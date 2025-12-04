@@ -66,10 +66,11 @@ class DataCleaner:
     def _parse_author_affiliations(self, author_section: str) -> List[Tuple[str, str, str]]:
         """Parse a single author's affiliation section.
         
-        RULE: In the affiliation string, elements are: Institution, City, [State], Country
+        RULE: In the affiliation string, elements are: [Department], Institution, City, [State], Country
         The LAST element before the next institution (or end) is ALWAYS the country.
         
-        Strategy: Find all institutions, then the next country after each institution is its country.
+        Strategy: Find all institutions, then the element just before the next institution
+        (or at the end) is the country for that institution.
         
         Returns: List of (author_name, institution, country) tuples
         """
@@ -89,10 +90,16 @@ class DataCleaner:
         if len(affiliation_parts) < 2:  # Need at least Institution, Country
             return []
         
-        # Find all institution indices
+        # Find all institution indices (skip any institution keywords before index 0)
         institution_indices = []
         for i, part in enumerate(affiliation_parts):
             if self._is_likely_institution(part):
+                # Skip if this looks like a department name before a proper institution
+                # (e.g., "Technology Park" before "Asia Pacific University")
+                if i + 1 < len(affiliation_parts) and self._is_likely_institution(affiliation_parts[i + 1]):
+                    # Next element is also an institution, so current one is likely just a department
+                    # Don't skip it, but the next one will be the main institution
+                    pass
                 institution_indices.append(i)
         
         if not institution_indices:
@@ -110,14 +117,22 @@ class DataCleaner:
                 next_inst_idx = institution_indices[idx + 1]
                 # Country is the element just before the next institution
                 if next_inst_idx > inst_idx + 1:
-                    country = affiliation_parts[next_inst_idx - 1]
+                    country_candidate = affiliation_parts[next_inst_idx - 1]
+                    # Make sure this isn't another institution (like a department name)
+                    if not self._is_likely_institution(country_candidate):
+                        country = country_candidate
+                    else:
+                        # Skip this one, it's probably a sub-unit
+                        continue
                 else:
                     continue  # No space for a country
             else:
                 # This is the last institution, country is at the end
                 country = affiliation_parts[-1]
             
-            results.append((author_name, institution, country))
+            # Verify the country is not an institution name
+            if not self._is_likely_institution(country):
+                results.append((author_name, institution, country))
         
         return results
     
