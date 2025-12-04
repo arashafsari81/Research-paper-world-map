@@ -98,17 +98,22 @@ const SidePanel = ({
       return (
         <div className="space-y-6">
           <div className="bg-gradient-to-br from-cyan-50 to-teal-50 rounded-lg p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">{selectedAuthor.name}</h2>
-                <p className="text-sm text-gray-600 flex items-center">
-                  <Building2 className="w-4 h-4 mr-1" />
-                  {selectedAuthor.affiliation}
-                </p>
+            <div className="mb-4">
+              <div className="flex items-start justify-between mb-2">
+                <h2 className="text-2xl font-bold text-gray-800">{selectedAuthor.name}</h2>
               </div>
-              <Badge variant="secondary" className="bg-cyan-100 text-cyan-700">
-                {filteredPapers.length} Papers {yearFilter !== 'all' && `(${yearFilter})`}
-              </Badge>
+              <p className="text-sm text-gray-600 flex items-center mb-3">
+                <Building2 className="w-4 h-4 mr-1" />
+                {selectedAuthor.affiliation}
+              </p>
+              <div className="flex gap-2">
+                <Badge variant="secondary" className="bg-cyan-100 text-cyan-700">
+                  {filteredPapers.length} Papers {yearFilter !== 'all' && `(${yearFilter})`}
+                </Badge>
+                <Badge variant="secondary" className="bg-teal-100 text-teal-700">
+                  {selectedAuthor.citationCount || 0} Total Citations
+                </Badge>
+              </div>
             </div>
           </div>
 
