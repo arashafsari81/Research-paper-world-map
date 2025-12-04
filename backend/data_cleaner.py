@@ -53,16 +53,95 @@ class DataCleaner:
         print(f"Cleaning complete. Dataset now has {len(cleaned_df)} papers.")
         return cleaned_df
     
-    def _extract_universities_and_countries(self, affiliations_text: str) -> List[Tuple[str, str]]:
-        """Extract ALL (university, country) pairs from affiliations text.
+    def _is_likely_country(self, text: str) -> bool:
+        """Check if a text part is likely a country name."""
+        # Common countries in academic publications
+        countries = {
+            'malaysia', 'china', 'united states', 'united kingdom', 'australia', 
+            'india', 'singapore', 'japan', 'south korea', 'taiwan', 'thailand',
+            'indonesia', 'vietnam', 'philippines', 'canada', 'germany', 'france',
+            'italy', 'spain', 'netherlands', 'sweden', 'norway', 'denmark', 'finland',
+            'switzerland', 'austria', 'belgium', 'poland', 'russia', 'brazil',
+            'mexico', 'argentina', 'chile', 'south africa', 'egypt', 'saudi arabia',
+            'united arab emirates', 'turkey', 'iran', 'pakistan', 'bangladesh',
+            'new zealand', 'ireland', 'portugal', 'greece', 'czech republic',
+            'hungary', 'romania', 'ukraine', 'israel', 'jordan', 'lebanon',
+            'oman', 'qatar', 'kuwait', 'bahrain', 'hong kong', 'macao'
+        }
+        text_lower = text.lower().strip()
+        return text_lower in countries
+    
+    def _is_likely_institution(self, text: str) -> bool:
+        """Check if a text part is likely an institution name."""
+        text_lower = text.lower()
+        institution_keywords = [
+            'university', 'college', 'institute', 'school', 'academy',
+            'center', 'centre', 'department', 'faculty', 'laboratory',
+            'research', 'program', 'programme'
+        ]
+        return any(keyword in text_lower for keyword in institution_keywords)
+    
+    def _parse_author_affiliations(self, author_section: str) -> List[Tuple[str, str, str]]:
+        """Parse a single author's affiliation section.
         
-        Generic approach: After author name, extract in groups of 3 or 4:
-        - Institution, City, Country (3 elements)
-        - Institution, City, State/Province, Country (4 elements)
-        
-        No hardcoded keywords - extract everything!
+        Returns: List of (author_name, institution, country) tuples
         """
-        universities_countries = []
+        parts = [p.strip() for p in author_section.split(',')]
+        
+        if len(parts) < 3:
+            return []
+        
+        # First two parts are LastName, FirstName
+        last_name = parts[0]
+        first_name = parts[1]
+        author_name = f"{first_name} {last_name}"
+        
+        # Remaining parts are affiliations
+        affiliation_parts = parts[2:]
+        
+        # Find all country indices in the remaining parts
+        country_indices = []
+        for i, part in enumerate(affiliation_parts):
+            if self._is_likely_country(part):
+                country_indices.append(i)
+        
+        if not country_indices:
+            # No countries found, can't parse affiliations properly
+            return []
+        
+        # Extract (institution, country) pairs
+        results = []
+        
+        for country_idx in country_indices:
+            country = affiliation_parts[country_idx]
+            
+            # Look backwards from country to find the institution
+            # The institution is typically 1-3 positions before the country
+            institution = None
+            
+            # Search backwards up to 4 positions to find institution keyword
+            search_start = max(0, country_idx - 4)
+            for i in range(country_idx - 1, search_start - 1, -1):
+                if self._is_likely_institution(affiliation_parts[i]):
+                    institution = affiliation_parts[i]
+                    break
+            
+            # If no institution found, take the part immediately before country
+            # (might be a city, but better than nothing)
+            if not institution and country_idx > 0:
+                institution = affiliation_parts[country_idx - 1]
+            
+            if institution:
+                results.append((author_name, institution, country))
+        
+        return results
+    
+    def _extract_universities_and_countries(self, affiliations_text: str) -> List[Tuple[str, str, str]]:
+        """Extract ALL (author_name, university, country) tuples from affiliations text.
+        
+        Returns: List of (author_name, institution, country) tuples
+        """
+        results = []
         seen = set()
         
         # Split by semicolon (each author's affiliations)
@@ -73,71 +152,17 @@ class DataCleaner:
             if not entry:
                 continue
             
-            # Split by comma
-            parts = [p.strip() for p in entry.split(',')]
+            # Parse this author's affiliations
+            author_affiliations = self._parse_author_affiliations(entry)
             
-            if len(parts) < 4:
-                continue
-            
-            # Skip first 2 parts (LastName, FirstName)
-            # Remaining parts: groups of affiliations
-            affiliation_parts = parts[2:]
-            
-            # Strategy: Process in groups of 3-4
-            # Pattern recognition: Institution, Location(s), Country
-            # Country is typically the last element in a group before next institution
-            
-            i = 0
-            while i < len(affiliation_parts):
-                # Take current part as institution
-                university = affiliation_parts[i]
-                
-                # Look ahead for the country (typically 2-3 positions ahead)
-                # Group size is usually 3 (Inst, City, Country) or 4 (Inst, City, State, Country)
-                
-                if i + 2 < len(affiliation_parts):
-                    # Try pattern: Inst, City, Country
-                    country = affiliation_parts[i + 2]
-                    
-                    # Check if i+3 exists and looks like another institution
-                    # If i+3 has "university/college" keyword, then i+2 is likely the country
-                    if i + 3 < len(affiliation_parts):
-                        next_part = affiliation_parts[i + 3].lower()
-                        has_inst_keyword = any(kw in next_part for kw in 
-                                             ['university', 'college', 'institute', 'school'])
-                        
-                        if has_inst_keyword:
-                            # Pattern: Inst, City, Country, NextInst
-                            # i+2 is the country
-                            pass  # country already set to i+2
-                        else:
-                            # Pattern might be: Inst, City, State, Country
-                            # Check if i+3 looks more like a country (shorter, no institution keywords)
-                            if len(affiliation_parts[i + 3]) < len(country) or i + 3 == len(affiliation_parts) - 1:
-                                country = affiliation_parts[i + 3]
-                                i += 4
-                            else:
-                                i += 3
-                    else:
-                        # End of list, i+2 is country
-                        i += 3
-                    
-                    key = (university.lower(), country.lower())
-                    if key not in seen and len(university) > 2 and len(country) > 1:
-                        seen.add(key)
-                        universities_countries.append((university, country))
-                elif i + 1 < len(affiliation_parts):
-                    # Only 2 elements: Inst, Country
-                    country = affiliation_parts[i + 1]
-                    key = (university.lower(), country.lower())
-                    if key not in seen and len(university) > 2 and len(country) > 1:
-                        seen.add(key)
-                        universities_countries.append((university, country))
-                    i += 2
-                else:
-                    i += 1
+            # Add unique combinations
+            for author_name, institution, country in author_affiliations:
+                key = (author_name.lower(), institution.lower(), country.lower())
+                if key not in seen:
+                    seen.add(key)
+                    results.append((author_name, institution, country))
         
-        return universities_countries
+        return results
     
     def _parse_authors_with_affiliations(self, row) -> List[Dict]:
         """Parse 'Authors with affiliations' field.
