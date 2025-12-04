@@ -69,7 +69,8 @@ class DataCleaner:
     def _extract_universities_and_countries(self, affiliations_text: str) -> List[Tuple[str, str]]:
         """Extract all unique (university, country) pairs from affiliations text.
         
-        Format: "LastName, FirstName, Univ1, City1, Country1, Univ2, City2, Country2; NextAuthor..."
+        Format: "LastName, FirstName, Univ1, City1, Country1, Univ2, City2, State2, Country2; ..."
+        Pattern: Institution, City, [State], Country (repeated)
         """
         universities_countries = []
         seen = set()
@@ -85,77 +86,45 @@ class DataCleaner:
             # Split by comma
             parts = [p.strip() for p in entry.split(',')]
             
-            if len(parts) < 4:  # Need at least: LastName, FirstName, Institution, Country
+            if len(parts) < 4:
                 continue
             
-            # Skip first two parts (author name: LastName, FirstName)
+            # Skip first two parts (LastName, FirstName)
             affiliation_parts = parts[2:]
             
-            # Parse multiple affiliations within this author's entry
-            # Typically groups of 3: Institution, City/State, Country
+            # Parse affiliations in groups
             i = 0
             while i < len(affiliation_parts):
-                # Look for institution (contains university keywords OR is followed by a city/country)
-                current_part = affiliation_parts[i]
+                # Each affiliation: Institution, City, [State], Country
+                # Institution has university keywords
+                has_keyword = any(kw in affiliation_parts[i].lower() for kw in 
+                                ['university', 'college', 'institute', 'school', 'polytechnic', 'academy'])
                 
-                # Check if this looks like an institution
-                has_uni_keyword = any(keyword in current_part.lower() for keyword in 
-                                    ['university', 'college', 'institute', 'school', 'polytechnic', 'academy', 'center', 'centre'])
-                
-                if has_uni_keyword or i == 0:
-                    # This is likely an institution
-                    university = current_part
-                    
-                    # Next 1-2 parts are location (city, maybe state)
-                    # Last part before next institution is country
-                    country = None
-                    
-                    # Look ahead to find the country
-                    if i + 1 < len(affiliation_parts):
-                        # Check if next part is also an institution (rare case)
-                        next_has_keyword = any(keyword in affiliation_parts[i+1].lower() for keyword in 
-                                             ['university', 'college', 'institute', 'school'])
-                        
-                        if next_has_keyword:
-                            # Next part is another institution, current one has no country
-                            # Skip this one
-                            i += 1
-                            continue
-                        
-                        # Typical case: Institution, City, Country OR Institution, City, State, Country
-                        if i + 2 < len(affiliation_parts):
-                            # Check if i+3 is an institution
-                            if i + 3 < len(affiliation_parts):
-                                part_3 = affiliation_parts[i+3]
-                                if any(keyword in part_3.lower() for keyword in ['university', 'college', 'institute', 'school']):
-                                    # Pattern: Inst, City, Country, NextInst
-                                    country = affiliation_parts[i+2]
-                                    i += 3
-                                else:
-                                    # Pattern: Inst, City, State, Country
-                                    country = affiliation_parts[i+3] if i+3 < len(affiliation_parts) else affiliation_parts[i+2]
-                                    i += 4
-                            else:
-                                # End of list: Inst, City, Country
-                                country = affiliation_parts[i+2]
-                                i += 3
-                        else:
-                            # Only one more part: Inst, Country
-                            country = affiliation_parts[i+1]
-                            i += 2
-                    else:
-                        # No more parts
-                        i += 1
-                        continue
-                    
-                    if country:
-                        key = (university.lower(), country.lower())
-                        if key not in seen:
-                            seen.add(key)
-                            universities_countries.append((university, country))
-                else:
-                    # Not an institution, skip
+                if not has_keyword:
                     i += 1
+                    continue
+                
+                university = affiliation_parts[i]
+                country = None
+                
+                # Find the country (search next 2-3 elements)
+                for j in range(i+1, min(i+5, len(affiliation_parts))):
+                    if self._is_likely_country(affiliation_parts[j]):
+                        country = affiliation_parts[j]
+                        # Jump to next potential institution
+                        i = j + 1
+                        break
+                
+                if not country:
+                    # No country found in next few elements, skip this institution
+                    i += 1
+                    continue
+                
+                if university and country:
+                    key = (university.lower(), country.lower())
+                    if key not in seen:
+                        seen.add(key)
+                        universities_countries.append((university, country))
         
         return universities_countries
     
