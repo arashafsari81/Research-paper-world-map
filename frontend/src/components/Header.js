@@ -170,7 +170,11 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
           {(searchTerm || yearFilter !== 'all') && (
             <Button 
               variant="outline" 
-              onClick={onClearFilters}
+              onClick={() => {
+                setStartYear('all');
+                setEndYear('all');
+                onClearFilters();
+              }}
               className="bg-white text-gray-700 hover:bg-gray-100 shadow-md h-10 text-sm"
             >
               Clear All
