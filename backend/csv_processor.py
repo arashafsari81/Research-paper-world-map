@@ -254,6 +254,10 @@ class CSVProcessor:
                 })
             
             if universities:  # Only include countries with universities
+                # Calculate country citations
+                country_papers_set = country_data['paper_ids']
+                country_citations = sum(all_papers[pid]['cited_by'] for pid in country_papers_set if pid in all_papers)
+                
                 coords = get_country_coordinates(country_data['name'])
                 result.append({
                     'id': country_id,
@@ -261,6 +265,7 @@ class CSVProcessor:
                     'lat': coords['lat'],
                     'lng': coords['lng'],
                     'paperCount': len(country_data['paper_ids']),  # Unique papers for this country
+                    'citationCount': country_citations,
                     'universities': sorted(universities, key=lambda x: x['paperCount'], reverse=True)
                 })
         
