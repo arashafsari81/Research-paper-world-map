@@ -15,7 +15,7 @@ class CSVProcessor:
         self.year_filter = year_filter
         
     def load_csv(self):
-        """Load CSV file into pandas DataFrame."""
+        """Load CSV file into pandas DataFrame and optionally filter by year or year range."""
         print(f"Loading CSV from {self.csv_path}...")
         
         # Import cleaner
