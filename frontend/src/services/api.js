@@ -29,7 +29,15 @@ class ApiService {
 
   async getCountries(year = null) {
     try {
-      const params = year ? { year } : {};
+      let params = {};
+      if (year && year !== 'all') {
+        if (typeof year === 'string' && year.includes('-')) {
+          const [start_year, end_year] = year.split('-').map(y => parseInt(y));
+          params = { start_year, end_year };
+        } else {
+          params = { year: parseInt(year) };
+        }
+      }
       const response = await axios.get(`${API_BASE}/data/countries`, { params });
       return response.data.countries;
     } catch (error) {
