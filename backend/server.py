@@ -432,7 +432,13 @@ async def export_papers(year: Optional[int] = None, start_year: Optional[int] = 
     wb.save(output)
     output.seek(0)
     
-    filename = f"papers_export_{year if year else 'all_years'}.xlsx"
+    # Generate filename based on filter
+    if start_year and end_year:
+        filename = f"papers_export_{start_year}_to_{end_year}.xlsx"
+    elif year:
+        filename = f"papers_export_{year}.xlsx"
+    else:
+        filename = "papers_export_all_years.xlsx"
     
     return StreamingResponse(
         output,
