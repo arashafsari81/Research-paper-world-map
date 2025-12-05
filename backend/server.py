@@ -88,9 +88,14 @@ async def root():
     return {"message": "Research Papers World Map API"}
 
 @api_router.post("/upload-dataset")
-async def upload_dataset(file: UploadFile = File(...)):
+async def upload_dataset(file: UploadFile = File(...), password: str = Form(...)):
     """Upload a new CSV dataset to replace the current one."""
     global cached_data, cached_stats
+    
+    # Validate password
+    correct_password = os.environ.get('UPLOAD_PASSWORD', 'TP068664')
+    if password != correct_password:
+        raise HTTPException(status_code=401, detail="Invalid password")
     
     # Validate file type
     if not file.filename.endswith('.csv'):
