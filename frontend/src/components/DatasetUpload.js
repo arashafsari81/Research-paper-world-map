@@ -14,6 +14,7 @@ import { Label } from './ui/label';
 
 const DatasetUpload = ({ onUploadSuccess }) => {
   const [uploading, setUploading] = useState(false);
+  const [validatingPassword, setValidatingPassword] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
