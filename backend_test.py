@@ -11,7 +11,7 @@ from typing import Dict, Any, Optional
 import time
 
 # Backend URL from frontend/.env
-BASE_URL = "https://academy-mapper.preview.emergentagent.com/api"
+BASE_URL = "https://scholarviz.preview.emergentagent.com/api"
 
 class APITester:
     def __init__(self, base_url: str):
