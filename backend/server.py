@@ -508,7 +508,13 @@ async def export_authors(year: Optional[int] = None, start_year: Optional[int] =
     wb.save(output)
     output.seek(0)
     
-    filename = f"authors_export_{year if year else 'all_years'}.xlsx"
+    # Generate filename based on filter
+    if start_year and end_year:
+        filename = f"authors_export_{start_year}_to_{end_year}.xlsx"
+    elif year:
+        filename = f"authors_export_{year}.xlsx"
+    else:
+        filename = "authors_export_all_years.xlsx"
     
     return StreamingResponse(
         output,
