@@ -582,7 +582,7 @@ async def export_universities(year: Optional[int] = None, start_year: Optional[i
     ws.title = "Universities"
     
     # Headers
-    ws.append(["#", "University Name", "Country", "Paper Count", "Authors Count"])
+    ws.append(["#", "University Name", "Country", "Paper Count", "Authors Count", "Citations"])
     
     # Collect all universities
     universities_list = []
@@ -592,7 +592,8 @@ async def export_universities(year: Optional[int] = None, start_year: Optional[i
                 'name': uni['name'],
                 'country': country['name'],
                 'paperCount': uni['paperCount'],
-                'authorsCount': len(uni['authors'])
+                'authorsCount': len(uni['authors']),
+                'citationCount': uni.get('citationCount', 0)
             })
     
     # Sort by paper count
@@ -605,7 +606,8 @@ async def export_universities(year: Optional[int] = None, start_year: Optional[i
             uni['name'],
             uni['country'],
             uni['paperCount'],
-            uni['authorsCount']
+            uni['authorsCount'],
+            uni['citationCount']
         ])
     
     # Adjust column widths
