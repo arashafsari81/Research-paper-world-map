@@ -120,11 +120,11 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
 
   return (
     <div className="absolute top-0 left-0 right-0 z-[1000] bg-gradient-to-r from-cyan-600 via-cyan-500 to-teal-500 shadow-lg">
-      <div className="px-6 py-2">
+      <div className="px-6 py-1">
         {/* Top Row: Title and Stats */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-3">
-            <img src="/apu-logo.png" alt="APU Logo" className="h-32 w-auto object-contain" />
+            <img src="/apu-logo.png" alt="APU Logo" className="w-auto object-contain" style={{height: '100px'}} />
             <div>
               <h1 className="text-2xl font-bold text-white">Research Papers World Map</h1>
               <p className="text-xs text-cyan-50">Explore academic publications globally</p>
