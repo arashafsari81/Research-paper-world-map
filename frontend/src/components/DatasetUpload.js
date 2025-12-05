@@ -38,7 +38,7 @@ const DatasetUpload = ({ onUploadSuccess }) => {
     }
 
     // Validate password with backend before opening file picker
-    setUploading(true);
+    setValidatingPassword(true);
     try {
       const formData = new FormData();
       formData.append('password', password);
@@ -50,18 +50,22 @@ const DatasetUpload = ({ onUploadSuccess }) => {
 
       if (response.ok) {
         // Password is valid, close dialog and open file picker
+        setValidatingPassword(false);
         setShowPasswordDialog(false);
         setPasswordError('');
-        fileInputRef.current?.click();
+        // Small delay to ensure dialog is fully closed before opening file picker
+        setTimeout(() => {
+          fileInputRef.current?.click();
+        }, 100);
       } else {
         // Invalid password
         setPasswordError('Invalid password. Please try again.');
+        setValidatingPassword(false);
       }
     } catch (err) {
       setPasswordError('Error validating password. Please try again.');
       console.error('Password validation error:', err);
-    } finally {
-      setUploading(false);
+      setValidatingPassword(false);
     }
   };
 
