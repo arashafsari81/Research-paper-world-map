@@ -241,7 +241,7 @@ const DatasetUpload = ({ onUploadSuccess }) => {
                 setPassword('');
                 setPasswordError('');
               }}
-              disabled={uploading}
+              disabled={validatingPassword}
               className="border-gray-300 text-gray-700 hover:bg-gray-50"
             >
               Cancel
@@ -249,10 +249,10 @@ const DatasetUpload = ({ onUploadSuccess }) => {
             <Button
               type="button"
               onClick={handlePasswordSubmit}
-              disabled={uploading}
+              disabled={validatingPassword}
               className="bg-teal-600 hover:bg-teal-700 text-white"
             >
-              {uploading ? (
+              {validatingPassword ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
                   Validating...
