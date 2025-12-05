@@ -87,6 +87,14 @@ def load_data(year_filter=None):
 async def root():
     return {"message": "Research Papers World Map API"}
 
+@api_router.post("/validate-upload-password")
+async def validate_upload_password(password: str = Form(...)):
+    """Validate the upload password before allowing file selection."""
+    correct_password = os.environ.get('UPLOAD_PASSWORD', 'TP068664')
+    if password != correct_password:
+        raise HTTPException(status_code=401, detail="Invalid password")
+    return {"valid": True}
+
 @api_router.post("/upload-dataset")
 async def upload_dataset(file: UploadFile = File(...), password: str = Form(...)):
     """Upload a new CSV dataset to replace the current one."""
