@@ -167,20 +167,20 @@ const DatasetUpload = ({ onUploadSuccess }) => {
 
       {/* Password Dialog */}
       <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-white z-[9999]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-gray-900">
               <Lock className="w-5 h-5 text-teal-600" />
               Authentication Required
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-gray-600">
               Please enter the password to upload a new dataset.
             </DialogDescription>
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-gray-700">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -195,7 +195,7 @@ const DatasetUpload = ({ onUploadSuccess }) => {
                     handlePasswordSubmit();
                   }
                 }}
-                className="col-span-3"
+                className="col-span-3 bg-white border-gray-300"
                 autoFocus
               />
               {passwordError && (
@@ -204,7 +204,7 @@ const DatasetUpload = ({ onUploadSuccess }) => {
             </div>
           </div>
           
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button
               type="button"
               variant="outline"
@@ -213,13 +213,14 @@ const DatasetUpload = ({ onUploadSuccess }) => {
                 setPassword('');
                 setPasswordError('');
               }}
+              className="border-gray-300 text-gray-700 hover:bg-gray-50"
             >
               Cancel
             </Button>
             <Button
               type="button"
               onClick={handlePasswordSubmit}
-              className="bg-teal-600 hover:bg-teal-700"
+              className="bg-teal-600 hover:bg-teal-700 text-white"
             >
               Continue
             </Button>
