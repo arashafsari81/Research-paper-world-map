@@ -377,9 +377,17 @@ async def search(q: Optional[str] = None, year: Optional[int] = None):
     return {'countries': data}
 
 @api_router.get("/export/papers")
-async def export_papers(year: Optional[int] = None):
+async def export_papers(year: Optional[int] = None, start_year: Optional[int] = None, end_year: Optional[int] = None):
     """Export all paper titles to Excel."""
-    data, stats = load_data(year_filter=year)
+    # Determine year filter type
+    if start_year and end_year:
+        year_filter = (start_year, end_year)
+    elif year:
+        year_filter = year
+    else:
+        year_filter = None
+    
+    data, stats = load_data(year_filter=year_filter)
     
     if data is None:
         raise HTTPException(status_code=500, detail="Data not loaded")
