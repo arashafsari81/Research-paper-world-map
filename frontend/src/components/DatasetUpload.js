@@ -112,54 +112,121 @@ const DatasetUpload = ({ onUploadSuccess }) => {
   };
 
   return (
-    <div className="inline-block">
-      <label
-        htmlFor="csv-upload"
-        className="inline-flex items-center gap-2 px-4 h-10 bg-white hover:bg-gray-50 text-teal-600 border border-teal-600 rounded-lg cursor-pointer transition-colors text-sm font-medium"
-      >
-        {uploading ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Uploading...
-          </>
-        ) : (
-          <>
-            <Upload className="w-4 h-4" />
-            Upload CSV
-          </>
+    <>
+      <div className="inline-block">
+        <button
+          onClick={handleUploadButtonClick}
+          disabled={uploading}
+          className="inline-flex items-center gap-2 px-4 h-10 bg-white hover:bg-gray-50 text-teal-600 border border-teal-600 rounded-lg cursor-pointer transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {uploading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Uploading...
+            </>
+          ) : (
+            <>
+              <Upload className="w-4 h-4" />
+              Upload CSV
+            </>
+          )}
+        </button>
+        
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv"
+          onChange={handleFileSelected}
+          disabled={uploading}
+          className="hidden"
+        />
+        
+        {/* Success Message */}
+        {message && (
+          <div className="fixed top-4 right-4 z-50 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg shadow-lg flex items-start gap-2 max-w-md">
+            <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium">Success!</p>
+              <p className="text-sm">{message}</p>
+            </div>
+          </div>
         )}
-      </label>
-      <input
-        id="csv-upload"
-        type="file"
-        accept=".csv"
-        onChange={handleFileUpload}
-        disabled={uploading}
-        className="hidden"
-      />
-      
-      {/* Success Message */}
-      {message && (
-        <div className="fixed top-4 right-4 z-50 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg shadow-lg flex items-start gap-2 max-w-md">
-          <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="font-medium">Success!</p>
-            <p className="text-sm">{message}</p>
+        
+        {/* Error Message */}
+        {error && (
+          <div className="fixed top-4 right-4 z-50 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg shadow-lg flex items-start gap-2 max-w-md">
+            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium">Error</p>
+              <p className="text-sm">{error}</p>
+            </div>
           </div>
-        </div>
-      )}
-      
-      {/* Error Message */}
-      {error && (
-        <div className="fixed top-4 right-4 z-50 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg shadow-lg flex items-start gap-2 max-w-md">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="font-medium">Error</p>
-            <p className="text-sm">{error}</p>
+        )}
+      </div>
+
+      {/* Password Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5 text-teal-600" />
+              Authentication Required
+            </DialogTitle>
+            <DialogDescription>
+              Please enter the password to upload a new dataset.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setPasswordError('');
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handlePasswordSubmit();
+                  }
+                }}
+                className="col-span-3"
+                autoFocus
+              />
+              {passwordError && (
+                <p className="text-sm text-red-600">{passwordError}</p>
+              )}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+          
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowPasswordDialog(false);
+                setPassword('');
+                setPasswordError('');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handlePasswordSubmit}
+              className="bg-teal-600 hover:bg-teal-700"
+            >
+              Continue
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
