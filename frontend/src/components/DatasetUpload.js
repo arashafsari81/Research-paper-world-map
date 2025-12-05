@@ -29,16 +29,39 @@ const DatasetUpload = ({ onUploadSuccess }) => {
     setPasswordError('');
   };
 
-  const handlePasswordSubmit = () => {
+  const handlePasswordSubmit = async () => {
     // Validate password is entered
     if (!password.trim()) {
       setPasswordError('Please enter a password');
       return;
     }
 
-    // Close dialog and trigger file input
-    setShowPasswordDialog(false);
-    fileInputRef.current?.click();
+    // Validate password with backend before opening file picker
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('password', password);
+
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/validate-upload-password`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        // Password is valid, close dialog and open file picker
+        setShowPasswordDialog(false);
+        setPasswordError('');
+        fileInputRef.current?.click();
+      } else {
+        // Invalid password
+        setPasswordError('Invalid password. Please try again.');
+      }
+    } catch (err) {
+      setPasswordError('Error validating password. Please try again.');
+      console.error('Password validation error:', err);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleFileSelected = async (event) => {
