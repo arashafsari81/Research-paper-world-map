@@ -532,7 +532,7 @@ async def export_countries(year: Optional[int] = None, start_year: Optional[int]
     ws.title = "Countries"
     
     # Headers
-    ws.append(["#", "Country Name", "Paper Count", "Universities Count", "Latitude", "Longitude"])
+    ws.append(["#", "Country Name", "Paper Count", "Universities Count", "Citations"])
     
     # Add countries
     for idx, country in enumerate(data, 1):
@@ -541,8 +541,7 @@ async def export_countries(year: Optional[int] = None, start_year: Optional[int]
             country['name'],
             country['paperCount'],
             len(country['universities']),
-            country['lat'],
-            country['lng']
+            country.get('citationCount', 0)
         ])
     
     # Adjust column widths
