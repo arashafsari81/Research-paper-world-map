@@ -1,22 +1,67 @@
-import React, { useState } from 'react';
-import { Upload, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Upload, CheckCircle, AlertCircle, Loader2, Lock } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
+import { Label } from './ui/label';
 
 const DatasetUpload = ({ onUploadSuccess }) => {
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const fileInputRef = useRef(null);
 
-  const handleFileUpload = async (event) => {
+  const handleUploadButtonClick = () => {
+    // Show password dialog when upload button is clicked
+    setShowPasswordDialog(true);
+    setPassword('');
+    setPasswordError('');
+  };
+
+  const handlePasswordSubmit = () => {
+    // Validate password is entered
+    if (!password.trim()) {
+      setPasswordError('Please enter a password');
+      return;
+    }
+
+    // Close dialog and trigger file input
+    setShowPasswordDialog(false);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = async (event) => {
     const file = event.target.files[0];
     
-    if (!file) return;
+    if (!file) {
+      // Reset password if no file selected
+      setPassword('');
+      return;
+    }
 
     // Validate file type
     if (!file.name.endsWith('.csv')) {
       setError('Please upload a CSV file');
+      setPassword('');
       return;
     }
 
+    setSelectedFile(file);
+    await uploadFile(file);
+  };
+
+  const uploadFile = async (file) => {
     setUploading(true);
     setError(null);
     setMessage(null);
@@ -24,6 +69,7 @@ const DatasetUpload = ({ onUploadSuccess }) => {
     try {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('password', password);
 
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/upload-dataset`, {
         method: 'POST',
@@ -45,13 +91,23 @@ const DatasetUpload = ({ onUploadSuccess }) => {
           window.location.reload();
         }, 2000);
       } else {
-        setError(data.detail || 'Failed to upload dataset');
+        if (response.status === 401) {
+          setError('Invalid password. Please try again.');
+        } else {
+          setError(data.detail || 'Failed to upload dataset');
+        }
       }
     } catch (err) {
       setError('Error uploading file. Please try again.');
       console.error('Upload error:', err);
     } finally {
       setUploading(false);
+      setPassword('');
+      setSelectedFile(null);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
