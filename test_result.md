@@ -255,14 +255,10 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Data Processing and Cleaning Pipeline"
-    - "API Endpoints for Stats and Data"
-    - "Year Filtering"
     - "Search Functionality"
-    - "Excel Export Functionality"
-  stuck_tasks:
-    - "Data Processing and Cleaning Pipeline (stuck_count: 4 - but now fixed with new approach)"
-  test_all: true
+    - "Excel Export Button and Modal"
+  stuck_tasks: []
+  test_all: false
   test_priority: "high_first"
 
 agent_communication:
