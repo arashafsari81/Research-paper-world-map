@@ -49,7 +49,7 @@ function CountryMarker({ country, onClick, isSelected }) {
             <span style="
               color: white;
               font-weight: bold;
-              font-size: ${size > 12 ? '12px' : '10px'};
+              font-size: ${size > 20 ? '16px' : size > 15 ? '14px' : '12px'};
               user-select: none;
             ">${country.paperCount}</span>
           </div>
