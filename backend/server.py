@@ -418,7 +418,7 @@ async def export_papers(year: Optional[int] = None, start_year: Optional[int] = 
             paper['source'],
             paper.get('cited_by', 0),
             paper.get('doi', ''),
-            ', '.join(paper.get('authors', []))
+            '; '.join(paper.get('authors', []))  # Use semicolon separator for clarity
         ])
     
     # Adjust column widths
