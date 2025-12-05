@@ -92,13 +92,25 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
   }, [showExportMenu]);
   
   const handleExport = (type) => {
-    const yearParam = yearFilter !== 'all' ? `?year=${yearFilter}` : '';
+    // Build year parameters correctly for both single year and range
+    let yearParam = '';
+    if (yearFilter && yearFilter !== 'all') {
+      if (typeof yearFilter === 'string' && yearFilter.includes('-')) {
+        // Year range format: "2022-2023"
+        const [start_year, end_year] = yearFilter.split('-');
+        yearParam = `?start_year=${start_year}&end_year=${end_year}`;
+      } else {
+        // Single year
+        yearParam = `?year=${yearFilter}`;
+      }
+    }
+    
     const url = `${API_BASE}/export/${type}${yearParam}`;
     
     // Create a temporary anchor element to trigger download
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${type}_export_${yearFilter !== 'all' ? yearFilter : 'all_years'}.xlsx`;
+    link.download = `${type}_export_${yearFilter !== 'all' ? yearFilter.replace('-', '_') : 'all_years'}.xlsx`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
