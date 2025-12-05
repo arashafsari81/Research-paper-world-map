@@ -82,10 +82,10 @@ function CountryMarker({ country, onClick, isSelected }) {
 }
 
 const getMarkerSize = (paperCount) => {
-  if (paperCount > 2000) return 20;
-  if (paperCount > 500) return 16;
-  if (paperCount > 100) return 12;
-  return 8;
+  if (paperCount > 2000) return 30;
+  if (paperCount > 500) return 24;
+  if (paperCount > 100) return 18;
+  return 14;
 };
 
 const MapView = ({ onCountryClick, selectedCountry, searchTerm, yearFilter }) => {
