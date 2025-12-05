@@ -462,7 +462,7 @@ async def export_authors(year: Optional[int] = None, start_year: Optional[int] =
     ws.title = "Authors"
     
     # Headers
-    ws.append(["#", "Author Name", "Author ID", "Affiliation", "Country", "Paper Count"])
+    ws.append(["#", "Author Name", "Author ID", "Affiliation", "Country", "Paper Count", "Citations"])
     
     # Collect all unique authors
     authors_dict = {}
@@ -475,7 +475,8 @@ async def export_authors(year: Optional[int] = None, start_year: Optional[int] =
                         'id': author['id'],
                         'affiliation': author['affiliation'],
                         'country': country['name'],
-                        'paperCount': author['paperCount']
+                        'paperCount': author['paperCount'],
+                        'citationCount': author.get('citationCount', 0)
                     }
     
     # Add authors
@@ -486,7 +487,8 @@ async def export_authors(year: Optional[int] = None, start_year: Optional[int] =
             author['id'],
             author['affiliation'],
             author['country'],
-            author['paperCount']
+            author['paperCount'],
+            author['citationCount']
         ])
     
     # Adjust column widths
