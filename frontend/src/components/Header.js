@@ -124,7 +124,7 @@ const Header = ({ searchTerm, yearFilter, onSearchChange, onYearChange, onApplyF
         {/* Top Row: Title and Stats */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/apu-logo.png" alt="APU Logo" className="w-30 h-30 object-contain" />
+            <img src="/apu-logo.png" alt="APU Logo" className="h-16 w-auto object-contain" />
             <div>
               <h1 className="text-2xl font-bold text-white">Research Papers World Map</h1>
               <p className="text-xs text-cyan-50">Explore academic publications globally</p>
