@@ -1,4 +1,4 @@
-name: Deploy main-final to GitHub Pages
+name: Deploy main-final (gh-pages)
 
 on:
   push:
@@ -34,14 +34,8 @@ jobs:
         working-directory: frontend
         run: yarn build
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v1
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          path: frontend/build
-
-  deploy:
-    needs: build-and-deploy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./frontend/build
